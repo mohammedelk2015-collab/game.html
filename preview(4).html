@@ -1,0 +1,635 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minefun Custom Mode API</title>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#07111f;--panel:#0d1b2e;--panel2:#10243c;--blue:#16c8ff;--blue2:#367cff;--text:#eaf6ff;--muted:#91a9c2;--border:#1c4165}
+body{margin:0;background:radial-gradient(ellipse at top,#10284a 0%,var(--bg) 58%);color:var(--text);font-family:Arial,sans-serif;min-height:100vh}
+header{padding:26px 20px;text-align:center;background:#081426;border-bottom:1px solid var(--border)}
+h1{color:var(--blue);margin:0 0 8px;font-size:clamp(24px,4vw,38px);text-shadow:0 0 18px #16c8ff45}
+header p{color:var(--muted);margin:0}
+.layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:20px;max-width:1450px;margin:auto;padding:20px}
+aside,.panel,.script-card{background:#0b192b;border:1px solid var(--border);border-radius:13px}
+aside{padding:14px;height:max-content;position:sticky;top:12px}
+.side-title{font-size:12px;color:var(--muted);letter-spacing:2px;margin:8px 8px 12px}
+.cat{width:100%;text-align:left;color:#cce6ff;background:transparent;border:1px solid transparent;border-radius:8px;padding:11px;margin:3px 0;cursor:pointer;font-size:14px}
+.cat:hover,.cat.active{background:#103050;border-color:#146b9d;color:var(--blue)}
+main{min-width:0}
+.toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+#search{flex:1;min-width:170px;background:#081426;border:1px solid #23547b;color:white;border-radius:10px;padding:13px 15px;font-size:15px;outline:none}
+#search:focus,#apiReference:focus{border-color:var(--blue);box-shadow:0 0 0 2px #16c8ff22}
+button{font-family:inherit}
+.ai-btn{background:linear-gradient(135deg,#087cce,#16c8ff);color:#03101d;border:0;border-radius:9px;padding:13px 16px;font-weight:bold;cursor:pointer;white-space:nowrap}
+.ai-btn:hover{filter:brightness(1.12)}
+.panel{padding:17px;margin-bottom:18px}
+.panel h2{font-size:18px;color:var(--blue);margin:0 0 10px}
+.panel p{color:#c4d9ed;line-height:1.6;margin:6px 0}
+#aiStatus{font-size:13px;color:#69e6a4;min-height:18px;margin-top:8px}
+#apiReference{width:100%;min-height:190px;resize:vertical;background:#06101e;border:1px solid var(--border);border-radius:8px;padding:12px;color:#cfe8ff;font:12px/1.5 monospace}
+.reference-tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.small-btn,.copy-btn{background:#102d49;border:1px solid #24618b;color:#bdeaff;border-radius:7px;padding:8px 11px;cursor:pointer}
+.small-btn:hover,.copy-btn:hover{background:#16446b}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:13px}
+.script-card{padding:15px;cursor:pointer;transition:.15s;min-width:0}
+.script-card:hover{border-color:#168fc9;transform:translateY(-1px)}
+.script-card.selected{border:2px solid var(--blue);padding:14px;background:#0d2540}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.script-card h3{margin:0 0 6px;font-size:16px;color:#e8f7ff}
+.tag{font-size:11px;color:#70dfff;background:#103654;padding:5px 8px;border-radius:20px}
+.selected-tag{font-size:11px;color:#6dffb1;margin:8px 0}
+.script-card pre{overflow:auto;background:#050c16;border:1px solid #172f48;border-radius:8px;padding:12px;color:#bce8ff;font:12px/1.5 monospace;white-space:pre;max-height:280px}
+.card-actions{display:flex;justify-content:flex-end}
+.empty{color:var(--muted);padding:25px;text-align:center;grid-column:1/-1}
+footer{text-align:center;color:#6986a3;padding:24px;font-size:12px}
+@media(max-width:760px){.layout{grid-template-columns:1fr;padding:12px}aside{position:static}.categories{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.cat{margin:0}.toolbar{align-items:stretch}.ai-btn{white-space:normal}}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚡ MINEFUN CUSTOM MODE API</h1>
+  <p>Neon Blue • API reference • Script examples • Search and copy</p>
+</header>
+
+<div class="layout">
+  <aside>
+    <div class="side-title">CATEGORIES</div>
+    <div class="categories" id="categories">
+      <button class="cat active" data-category="all">🌐 All Scripts</button>
+      <button class="cat" data-category="tick">⏱ Tick</button>
+      <button class="cat" data-category="join">👋 Join</button>
+      <button class="cat" data-category="chat">💬 Chat</button>
+      <button class="cat" data-category="player">🧍 Player</button>
+      <button class="cat" data-category="timer">⌛ Timer</button>
+      <button class="cat" data-category="leaderboard">🏆 Leaderboard</button>
+      <button class="cat" data-category="npc">🤖 NPC</button>
+      <button class="cat" data-category="shop">🛒 Shop</button>
+      <button class="cat" data-category="title">✨ Titles</button>
+      <button class="cat" data-category="gamemode">🎮 Game Mode</button>
+      <button class="cat" data-category="team">🛡 Teams</button>
+    </div>
+  </aside>
+
+  <main>
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="🔎 Search scripts or methods...">
+      <button class="ai-btn" id="writeAI">🤖 Write for AI</button>
+    </div>
+
+    <section class="panel">
+      <h2>🤖 Write for AI — API Reference</h2>
+      <p>
+        Edit or paste your full Minefun.io Custom Mode API reference into this box.
+        Press <b>Write for AI</b> to copy its contents so you can paste them into an AI chat.
+        The reference is kept in this page and is not automatically sent to an AI service.
+      </p>
+      <textarea id="apiReference" spellcheck="false">MINEFUN.IO CUSTOM MODE API REFERENCE
+
+Instructions for an AI:
+Write Minefun.io Custom Mode scripts using only the API methods, events, types, and valid values supplied in the reference below. Do not invent methods or event names. If a required API feature is not documented, say so instead of guessing. Return complete scripts when requested.
+
+COMMON TYPES
+Position: { x, y, z }
+HeldItem, Velocity, MobInfo, DropItem, BlockData, BlockTemplate
+Text3DHandle
+SkyboxName, AmbienceMusicName
+ExplosionOptions, ParticleEffectOptions, Text3DOptions
+TeamOptions, Team
+ShopCurrency, ShopCategory, ShopItem
+NPC skins, NPC interaction settings, NPC presets, NPC spawn and info types
+
+EVENTS USED IN EXAMPLES
+api.on("tick", ...)
+api.on("beforeTick", ...)
+api.on("join", (player) => ...)
+api.on("leave", ...)
+api.on("playerDeath", ...)
+api.on("playerRespawn", ...)
+api.on("chat", (player, message, cancel) => ...)
+api.on("npcInteract", (npcId, player) => ...)
+api.on("shopBuy", (player, itemId) => ...)
+api.on("playerAttack", (attacker, target, damage, cancel) => ...)
+
+PLAYER EXAMPLES OF API METHODS
+player.setPosition(x, y, z)
+player.sendMessage(type, message)
+player.sendTitle(title, subtitle, color)
+player.getHealth()
+player.getMaxHealth()
+player.setHealth(value)
+player.heal(amount)
+player.damage(amount)
+player.getVelocity()
+player.getPlayTime()
+player.giveItem(itemId, amount)
+player.removeItem(itemId, amount)
+player.countItem(itemId)
+player.clearInventory()
+player.isInventoryFull()
+player.isCrouching()
+player.setGameMode(mode)
+player.setInfiniteBlocks(enabled)
+player.setSpectator(enabled)
+player.getSpawnPoint()
+player.setSpawnPoint(x, y, z)
+player.clearSpawnPoint()
+player.setTeam(teamId)
+player.getTeam()
+player.spawnParticles(x, y, z, effect, count)
+
+WORLD / API EXAMPLES
+api.players
+api.log(...)
+api.chat.sendMessage(type, message)
+api.sendTitle(title, subtitle, color)
+api.setTimeout(callback, milliseconds)
+api.setInterval(callback, milliseconds)
+api.clearInterval(timerId)
+api.triggerExplosion(x, y, z, options)
+api.setGameOption(option, value)
+api.createTeam(id, options)
+api.getTeams()
+api.areTeammates(playerA, playerB)
+
+NPC EXAMPLES
+api.npc.spawn({ name, position, skins, interact })
+api.npc.setPosition(npcId, x, y, z)
+api.npc.setHeldItem(npcId, itemId)
+api.npc.removeAll()
+NPC interaction kinds used in examples: "script", "shopCategory"
+NPC presets mentioned in the supplied API: rogue, noble, wizard, knight, villager, military, farmer, doctor, police, salesman, prisoner.
+
+SHOP EXAMPLES
+api.shop.addCategory(id, category)
+api.shop.addItem(categoryId, item)
+api.shop.updateItem(itemId, options)
+api.shop.addCurrency(id, currency)
+Shop item properties used in examples include id, name, description, price, buttonText, showButton.
+
+STORAGE / SCORE / OTHER API AREAS
+The supplied API reference also documents storage, session storage, leaderboard operations, room control, scoreboard, teams, mobs, particles, sounds, 3D text, action bars, rich text, block and item IDs, status effects, skyboxes, ambience music, limits, and example game modes.
+
+IMPORTANT
+This textbox is an editable reference starter, not a guaranteed verbatim copy of every line of the original Minefun API documentation. Paste the complete original reference here if you want the AI to receive every documented method, option, block ID, item ID, and example script.</textarea>
+      <div class="reference-tools">
+        <button class="small-btn" id="copyReference">📋 Copy Reference</button>
+        <button class="small-btn" id="selectReference">📝 Select All Text</button>
+      </div>
+      <div id="aiStatus" role="status" aria-live="polite"></div>
+    </section>
+
+    <section class="panel">
+      <h2>📘 Script Library</h2>
+      <p>Search the examples, choose a category, select a card, or copy any script.</p>
+      <p id="resultCount"></p>
+    </section>
+    <div class="grid" id="scriptGrid"></div>
+  </main>
+</div>
+
+<footer>Minefun Custom Mode • Neon Blue Script Library</footer>
+
+<script>
+"use strict";
+
+const scripts = [
+{id:"fall-respawn",category:"tick",title:"Fall Respawn",code:`api.on("tick", () => {
+  for (const [id, player] of api.players) {
+    if (player.position.y < 0) {
+      player.setPosition(0, 20, 0)
+    }
+  }
+})`},
+{id:"join-particles",category:"join",title:"Join Particles",code:`api.on("join", (player) => {
+  const pos = player.position
+  player.spawnParticles(pos.x, pos.y, pos.z, 1, 20)
+})`},
+{id:"welcome-message",category:"join",title:"Welcome Message",code:`api.on("join", (player) => {
+  player.sendMessage(3, "Welcome, " + player.name + "!")
+})`},
+{id:"explosion-command",category:"chat",title:"Explosion Command",code:`api.on("chat", (player, message) => {
+  if (message === "!boom") {
+    const pos = player.position
+    api.triggerExplosion(pos.x, pos.y, pos.z, {
+      radius: 5, damage: 30, knockback: 10, destroyBlocks: true
+    })
+  }
+})`},
+{id:"countdown",category:"timer",title:"Round Countdown",code:`api.on("join", (player) => {
+  player.sendMessage(3, "Game starts in 5 seconds...")
+  api.setTimeout(() => {
+    api.sendTitle("GO!", "Fight!", 0xFF0000)
+  }, 5000)
+})`},
+{id:"round-timer",category:"timer",title:"60 Second Timer",code:`let seconds = 60
+const timer = api.setInterval(() => {
+  seconds--
+  api.setActionBar("Time: " + seconds + "s")
+  if (seconds <= 0) {
+    api.clearInterval(timer)
+    api.sendTitle("Time's up!", "", 0xFF0000)
+  }
+}, 1000)`},
+{id:"leaderboard-range",category:"leaderboard",title:"Leaderboard Range",code:`// Get all players with score between 50 and 100
+const mid = api.leaderboard.getRange(50, 100)
+api.log("Players in 50-100 range:", mid.length)`},
+{id:"player-death",category:"player",title:"Player Death",code:`api.on("playerDeath", (player) => {
+  api.chat.sendMessage(1, player.name + " died!")
+  player.setSpectator(true)
+})`},
+{id:"player-respawn",category:"player",title:"Player Respawn",code:`api.on("playerRespawn", (player) => {
+  player.setHealth(100)
+  player.giveItem(627, 1)
+})`},
+{id:"play-time",category:"player",title:"Player Play Time",code:`api.on("chat", (player, message) => {
+  if (message === "!time") {
+    const ms = player.getPlayTime()
+    player.sendMessage(3, "You've been here " + ms + "ms")
+  }
+})`},
+{id:"survival-mode",category:"player",title:"Survival Mode",code:`api.on("join", (player) => {
+  player.setGameMode("survival")
+  player.setInfiniteBlocks(true)
+})`},
+{id:"welcome-title",category:"title",title:"Welcome Title",code:`api.on("join", (player) => {
+  player.sendTitle("Welcome!", "Have fun!", 0x50d500)
+})`},
+{id:"round-start-title",category:"title",title:"Round Start Title",code:`api.sendTitle("Round Start!", "Fight!", 0xFF0000)`},
+{id:"welcome-player-title",category:"player",title:"Welcome Player Title",code:`api.on("join", (player) => {
+  player.sendTitle("Welcome!", "Have fun!", 0x50d500)
+})`},
+{id:"half-health-warning",category:"player",title:"Half Health Warning",code:`api.on("tick", () => {
+  for (const [id, player] of api.players) {
+    if (player.getHealth() < player.getMaxHealth() / 2) {
+      player.sendMessage(1, "Below half health!")
+    }
+  }
+})`},
+{id:"low-health-warning",category:"player",title:"Low Health Warning",code:`api.on("tick", () => {
+  for (const [id, player] of api.players) {
+    if (player.getHealth() < 20) {
+      player.sendMessage(1, "Low health!")
+    }
+  }
+})`},
+{id:"falling-fast",category:"player",title:"Falling Fast Warning",code:`api.on("tick", () => {
+  for (const [id, player] of api.players) {
+    const vel = player.getVelocity()
+    if (vel.y < -10) {
+      player.sendMessage(1, "You're falling fast!")
+    }
+  }
+})`},
+{id:"clear-inventory",category:"player",title:"Clear Inventory on Join",code:`api.on("join", (player) => {
+  player.clearInventory()
+  player.giveItem(627, 1)
+})`},
+{id:"high-altitude-damage",category:"player",title:"High Altitude Damage",code:`api.on("tick", () => {
+  for (const [id, player] of api.players) {
+    if (player.position.y > 100) {
+      player.damage(5)
+    }
+  }
+})`},
+{id:"crouch-heal",category:"player",title:"Crouch to Heal",code:`api.on("tick", () => {
+  for (const [id, player] of api.players) {
+    if (player.isCrouching()) {
+      player.heal(1)
+    }
+  }
+})`},
+{id:"full-health-on-join",category:"player",title:"Full Health on Join",code:`api.on("join", (player) => {
+  player.setHealth(100)
+})`},
+{id:"spawn-command",category:"chat",title:"Spawn Command",code:`api.on("chat", (player, message) => {
+  if (message === "!spawn") {
+    const sp = player.getSpawnPoint()
+    player.setPosition(sp.x, sp.y, sp.z)
+  }
+})`},
+{id:"clear-spawn",category:"chat",title:"Clear Spawn Point",code:`api.on("chat", (player, message) => {
+  if (message === "!clearspawn") {
+    player.clearSpawnPoint()
+    player.sendMessage(3, "Spawn point cleared!")
+  }
+})`},
+{id:"kit-inventory-check",category:"chat",title:"Kit Inventory Check",code:`api.on("chat", (player, message) => {
+  if (message === "!kit" && player.isInventoryFull()) {
+    player.sendMessage(1, "Inventory full!")
+    return
+  }
+})`},
+{id:"guide-npc",category:"npc",title:"Guide NPC",code:`const guideId = api.npc.spawn({
+  name: "Guide",
+  position: { x: 0, y: 3, z: 5 },
+  skins: savedSkins,
+  interact: { kind: "script" },
+})
+api.on("npcInteract", (npcId, player) => {
+  if (npcId === guideId) {
+    player.sendMessage(3, "Welcome! Break blocks to earn coins.")
+  }
+})`},
+{id:"npc-position",category:"npc",title:"Move NPC",code:`api.npc.setPosition(npcId, 10, 4, -6)`},
+{id:"npc-held-item",category:"npc",title:"NPC Held Item",code:`api.npc.setHeldItem(npcId, 12)`},
+{id:"trader-npc",category:"npc",title:"Trader NPC",code:`const trader = api.npc.spawn({
+  name: "Trader",
+  position: { x: 4, y: 3, z: 5 },
+  skins: savedSkins,
+  lookAtViewer: true,
+  interact: { kind: "shopCategory", category: "weapons" },
+})`},
+{id:"guide-custom-text",category:"npc",title:"Custom Guide Text",code:`const guideId = api.npc.spawn({
+  name: "Guide",
+  position: { x: 0, y: 3, z: 5 },
+  skins: savedSkins,
+  interact: { kind: "script" },
+})
+api.on("npcInteract", (npcId, player) => {
+  if (npcId === guideId) {
+    player.sendMessage(3, "Write your text here")
+  }
+})`},
+{id:"remove-npcs",category:"npc",title:"Remove All NPCs",code:`api.npc.removeAll()`},
+{id:"npc-held-item-again",category:"npc",title:"Set NPC Held Item",code:`api.npc.setHeldItem(npcId, 12)`},
+{id:"interval-stop",category:"timer",title:"Stop an Interval",code:`const timerId = api.setInterval(() => {
+  api.log("tick!")
+}, 1000)
+
+api.on("chat", (player, message) => {
+  if (message === "!stop") {
+    api.clearInterval(timerId)
+  }
+})`},
+{id:"shop-buy-sword",category:"shop",title:"Buy Sword",code:`api.on("shopBuy", (player, itemId) => {
+  if (itemId === "iron_sword") {
+    if (player.countItem(888) >= 10) {
+      player.removeItem(888, 10)
+      player.giveItem(850, 1)
+      player.sendMessage(3, "Purchased Iron Sword!")
+    } else {
+      player.sendMessage(1, "Not enough iron!")
+    }
+  }
+})`},
+{id:"shop-categories",category:"shop",title:"Shop Categories",code:`api.shop.addCategory("weapons", "[id:858] Weapons")
+api.shop.addCategory("info", { name: "Info" })`},
+{id:"shop-update-item",category:"shop",title:"Update Shop Item",code:`api.shop.updateItem("iron_sword", {
+  price: { iron: 15 },
+  name: "Enhanced Sword"
+})`},
+{id:"shop-add-items",category:"shop",title:"Add Shop Items",code:`// Regular purchasable item
+api.shop.addItem("weapons", {
+  id: "iron_sword",
+  name: "[id:850] Iron Sword",
+  description: "A sharp blade",
+  price: { iron: 10 },
+})
+
+// Action button (no price)
+api.shop.addItem("commands", {
+  id: "start_event",
+  name: "Start PvP Event",
+  buttonText: "GO!",
+})
+
+// Info card (no button)
+api.shop.addItem("info", {
+  id: "rules",
+  name: "[color:gold]Rules[/color]",
+  description: "1. No griefing\\n2. Be nice!",
+  showButton: false,
+})`},
+{id:"shop-currency",category:"shop",title:"Shop Currency",code:`// Inventory-based currency (iron ingots)
+api.shop.addCurrency("iron", {
+  name: "[id:888] Iron",
+  color: "#C0C0C0"
+})
+
+// Virtual currency (points)
+api.shop.addCurrency("points", {
+  name: "[id:912] Points",
+  color: "#FFD700",
+  source: "manual"
+})`},
+{id:"survival-on-join-simple",category:"gamemode",title:"Survival on Join",code:`api.on("join", (player) => {
+  player.setGameMode("survival")
+})`},
+{id:"pvp-fall-damage-timer",category:"gamemode",title:"Temporary PvP Toggle",code:`// Disable PvP and fall damage
+api.setGameOption("pvp", false)
+api.setGameOption("fallDamage", false)
+
+// Re-enable PvP after 60 seconds
+api.setTimeout(() => {
+  api.setGameOption("pvp", true)
+  api.chat.sendMessage(1, "PvP enabled!")
+}, 60000)`},
+{id:"admin-game-mode-commands",category:"gamemode",title:"Admin Game Mode Commands",code:`api.on("chat", (player, message, cancel) => {
+  const msg = message.toLowerCase()
+
+  if (player.name !== "{name}") {
+    if (msg === "/gc" || msg === "/gs") {
+      cancel()
+      player.sendTitle(
+        "you can not use this comand",
+        "you are not admin",
+        0xe52712
+      )
+    }
+    return
+  }
+
+  if (msg === "/gc") {
+    cancel()
+    player.setGameMode("creative")
+    player.sendTitle("game mode", "creativ on", 0x50d500)
+  }
+
+  if (msg === "/gs") {
+    cancel()
+    player.setGameMode("survival")
+    player.sendTitle("game mode", "survival on", 0xe52712)
+  }
+})`},
+{id:"create-red-blue-teams",category:"team",title:"Create Red and Blue Teams",code:`api.createTeam("red", { color: "red", displayName: "Red Team" })
+api.createTeam("blue", { color: "blue", displayName: "Blue Team" })`},
+{id:"auto-balance-teams",category:"team",title:"Auto-Balance Teams",code:`api.on("join", (player) => {
+  const teams = api.getTeams()
+  const smallest = teams.reduce((a, b) =>
+    a.players.length <= b.players.length ? a : b
+  )
+  player.setTeam(smallest.id)
+})`},
+{id:"check-player-team",category:"team",title:"Check Player Team",code:`api.on("chat", (player, message) => {
+  if (message === "!team") {
+    const team = player.getTeam()
+    player.sendMessage(3, team ? "Team: " + team : "No team")
+  }
+})`},
+{id:"disable-friendly-fire",category:"team",title:"Disable Friendly Fire",code:`api.on("playerAttack", (attacker, target, damage, cancel) => {
+  if (api.areTeammates(attacker, target)) {
+    cancel()
+  }
+})`}
+];
+
+const grid = document.getElementById("scriptGrid");
+const search = document.getElementById("search");
+const resultCount = document.getElementById("resultCount");
+const categories = document.getElementById("categories");
+const apiReference = document.getElementById("apiReference");
+const aiStatus = document.getElementById("aiStatus");
+const writeAI = document.getElementById("writeAI");
+let activeCategory = "all";
+let selectedId = null;
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[char]);
+}
+
+function getFilteredScripts() {
+  const query = search.value.trim().toLowerCase();
+  return scripts.filter(script => {
+    const categoryMatches = activeCategory === "all" ||
+      script.category === activeCategory;
+    const searchMatches = !query ||
+      script.title.toLowerCase().includes(query) ||
+      script.category.toLowerCase().includes(query) ||
+      script.code.toLowerCase().includes(query) ||
+      script.id.toLowerCase().includes(query);
+    return categoryMatches && searchMatches;
+  });
+}
+
+function renderScripts() {
+  const filtered = getFilteredScripts();
+  resultCount.textContent = `Showing ${filtered.length} of ${scripts.length} scripts`;
+
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="empty">No scripts found. Try another search.</div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(script => `
+    <article class="script-card ${selectedId === script.id ? "selected" : ""}"
+      data-id="${escapeHTML(script.id)}" tabindex="0" role="button"
+      aria-label="Select ${escapeHTML(script.title)}">
+      <div class="card-top">
+        <div><h3>${escapeHTML(script.title)}</h3></div>
+        <span class="tag">${escapeHTML(script.category)}</span>
+      </div>
+      ${selectedId === script.id
+        ? '<div class="selected-tag">✓ Selected for reference</div>'
+        : ""}
+      <pre><code>${escapeHTML(script.code)}</code></pre>
+      <div class="card-actions">
+        <button class="copy-btn" data-copy="${escapeHTML(script.id)}">📋 Copy Code</button>
+      </div>
+    </article>
+  `).join("");
+}
+
+categories.addEventListener("click", event => {
+  const button = event.target.closest("[data-category]");
+  if (!button) return;
+  activeCategory = button.dataset.category;
+  search.value = "";
+  categories.querySelectorAll(".cat").forEach(item =>
+    item.classList.toggle("active", item === button)
+  );
+  renderScripts();
+});
+
+search.addEventListener("input", () => {
+  activeCategory = "all";
+  categories.querySelectorAll(".cat").forEach(item =>
+    item.classList.toggle("active", item.dataset.category === "all")
+  );
+  renderScripts();
+});
+
+grid.addEventListener("click", async event => {
+  const copyButton = event.target.closest("[data-copy]");
+  if (copyButton) {
+    event.stopPropagation();
+    const script = scripts.find(item => item.id === copyButton.dataset.copy);
+    if (!script) return;
+    const success = await copyText(script.code);
+    copyButton.textContent = success ? "✅ Copied!" : "Select and copy manually";
+    setTimeout(() => copyButton.textContent = "📋 Copy Code", 1400);
+    return;
+  }
+
+  const card = event.target.closest(".script-card");
+  if (card) {
+    selectedId = card.dataset.id;
+    renderScripts();
+  }
+});
+
+grid.addEventListener("keydown", event => {
+  if (event.target.closest("button")) return;
+  if (event.key !== "Enter" && event.key !== " ") return;
+  const card = event.target.closest(".script-card");
+  if (!card) return;
+  event.preventDefault();
+  selectedId = card.dataset.id;
+  renderScripts();
+});
+
+async function copyText(text) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch (error) {}
+  const helper = document.createElement("textarea");
+  helper.value = text;
+  helper.style.position = "fixed";
+  helper.style.opacity = "0";
+  document.body.appendChild(helper);
+  helper.select();
+  let success = false;
+  try { success = document.execCommand("copy"); } catch (error) {}
+  helper.remove();
+  return success;
+}
+
+async function copyFullReference() {
+  const text = apiReference.value.trim();
+  if (!text) {
+    aiStatus.textContent = "The API reference box is empty. Paste your reference first.";
+    return;
+  }
+
+  const originalLabel = "🤖 Write for AI";
+  writeAI.disabled = true;
+  writeAI.textContent = "Copying...";
+  const success = await copyText(text);
+  writeAI.disabled = false;
+  writeAI.textContent = success ? "✅ Copied!" : originalLabel;
+  aiStatus.textContent = success
+    ? "✅ Reference copied! Paste it into your AI chat."
+    : "⚠️ Copy was blocked. Click the reference box, select its text, and copy it manually.";
+
+  setTimeout(() => writeAI.textContent = originalLabel, 1800);
+}
+
+writeAI.addEventListener("click", copyFullReference);
+document.getElementById("copyReference").addEventListener("click", copyFullReference);
+document.getElementById("selectReference").addEventListener("click", () => {
+  apiReference.focus();
+  apiReference.select();
+  aiStatus.textContent = "Reference selected. Press Ctrl+C to copy.";
+});
+
+renderScripts();
+</script>
+</body>
+</html>
