@@ -1,0 +1,165 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dodge the Blocks</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: #101426;
+  color: white;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+h1 { color: #45f5cf; }
+#game {
+  display: block;
+  margin: 15px auto;
+  background: #191f38;
+  border: 3px solid #45f5cf;
+  border-radius: 12px;
+  max-width: 95vw;
+}
+button {
+  padding: 13px 25px;
+  margin: 5px;
+  border: none;
+  border-radius: 10px;
+  background: #45f5cf;
+  color: #101426;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+}
+p { color: #cbd5e1; }
+</style>
+</head>
+<body>
+
+<h1>⚡ DODGE THE BLOCKS</h1>
+<p>Use ← → or A and D to dodge the falling blocks!</p>
+<p>Score: <span id="score">0</span> |
+   Best: <span id="best">0</span></p>
+<canvas id="game" width="400" height="500"></canvas>
+<button onclick="startGame()">▶ PLAY / RESTART</button>
+<div>
+<button onpointerdown="left=true" onpointerup="left=false"
+onpointerleave="left=false" onpointercancel="left=false">⬅ LEFT</button>
+<button onpointerdown="right=true" onpointerup="right=false"
+onpointerleave="right=false" onpointercancel="right=false">RIGHT ➡</button>
+</div>
+<p id="message">Press PLAY to start!</p>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const scoreText = document.getElementById("score");
+const bestText = document.getElementById("best");
+const message = document.getElementById("message");
+
+let player, blocks, score, running, left = false, right = false;
+let best = Number(localStorage.getItem("dodgeBest") || 0);
+bestText.textContent = best;
+
+function startGame() {
+  player = { x: 180, y: 440, w: 40, h: 40, speed: 6 };
+  blocks = [];
+  score = 0;
+  running = true;
+  left = right = false;
+  scoreText.textContent = score;
+  message.textContent = "Dodge everything!";
+  requestAnimationFrame(loop);
+}
+
+document.addEventListener("keydown", e => {
+  if (["ArrowLeft","ArrowRight"," "].includes(e.key)) e.preventDefault();
+  if (e.key === "ArrowLeft" || e.key.toLowerCase() === "a") left = true;
+  if (e.key === "ArrowRight" || e.key.toLowerCase() === "d") right = true;
+});
+document.addEventListener("keyup", e => {
+  if (e.key === "ArrowLeft" || e.key.toLowerCase() === "a") left = false;
+  if (e.key === "ArrowRight" || e.key.toLowerCase() === "d") right = false;
+});
+
+let frame = 0;
+function loop() {
+  if (!running) return;
+  frame++;
+
+  ctx.clearRect(0, 0, 400, 500);
+
+  // Background stars
+  ctx.fillStyle = "#ffffff";
+  for (let i = 0; i < 30; i++) {
+    let x = (i * 73) % 400;
+    let y = (i * 97 + frame * 2) % 500;
+    ctx.fillRect(x, y, 2, 2);
+  }
+
+  if (left) player.x -= player.speed;
+  if (right) player.x += player.speed;
+  player.x = Math.max(0, Math.min(400 - player.w, player.x));
+
+  if (frame % Math.max(12, 35 - Math.floor(score / 5)) === 0) {
+    let size = 25 + Math.random() * 25;
+    blocks.push({
+      x: Math.random() * (400 - size),
+      y: -size,
+      w: size,
+      h: size,
+      speed: 3 + Math.random() * 2 + score / 30
+    });
+  }
+
+  // Player
+  ctx.fillStyle = "#45f5cf";
+  ctx.shadowColor = "#45f5cf";
+  ctx.shadowBlur = 15;
+  ctx.fillRect(player.x, player.y, player.w, player.h);
+  ctx.shadowBlur = 0;
+
+  for (let i = blocks.length - 1; i >= 0; i--) {
+    let b = blocks[i];
+    b.y += b.speed;
+
+    ctx.fillStyle = "#ff416c";
+    ctx.shadowColor = "#ff416c";
+    ctx.shadowBlur = 10;
+    ctx.fillRect(b.x, b.y, b.w, b.h);
+    ctx.shadowBlur = 0;
+
+    if (player.x < b.x + b.w &&
+        player.x + player.w > b.x &&
+        player.y < b.y + b.h &&
+        player.y + player.h > b.y) {
+      running = false;
+      message.textContent = "💥 Game Over! Press PLAY to try again.";
+      if (score > best) {
+        best = score;
+        localStorage.setItem("dodgeBest", best);
+        bestText.textContent = best;
+      }
+      return;
+    }
+
+    if (b.y > 500) {
+      blocks.splice(i, 1);
+      score++;
+      scoreText.textContent = score;
+    }
+  }
+
+  requestAnimationFrame(loop);
+}
+
+ctx.fillStyle = "#45f5cf";
+ctx.font = "20px Arial";
+ctx.fillText("READY?", 165, 250);
+</script>
+</body>
+</html>
+
