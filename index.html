@@ -174,8 +174,7 @@ footer{text-align:center;color:#7897b3;padding:24px}
       </defs>
       <rect width="800" height="450" fill="url(#sky3)"/>
       <g stroke="#17649b" stroke-width="2" opacity=".8">
-        <path d="M250 50V420M310 50V420M370 50V420M430 50V420M490 50V420M550 50V420"/>
-        <path d="M250 90H610M250 150H610M250 210H610M250 270H610M250 330H610M250 390H610"/>
+        <path d="M250 50V420M310 50V420M370 50V420M430 50V420M490 50V420M550 50V420M250 90H610M250 150H610M250 210H610M250 270H610M250 330H610M250 390H610"/>
       </g>
       <rect x="245" y="45" width="370" height="380" fill="none" stroke="#39dfff" stroke-width="5"/>
       <g stroke="#c7fbff" stroke-width="3">
@@ -190,9 +189,12 @@ footer{text-align:center;color:#7897b3;padding:24px}
         <rect x="542" y="342" width="58" height="58" fill="url(#block3)"/>
       </g>
       <g fill="#fff" opacity=".9">
-        <circle cx="100" cy="110" r="4"/><circle cx="170" cy="190" r="5"/>
-        <circle cx="680" cy="120" r="4"/><circle cx="700" cy="300" r="5"/>
-        <circle cx="120" cy="330" r="4"/><circle cx="650" cy="390" r="4"/>
+        <circle cx="100" cy="110" r="4"/>
+        <circle cx="170" cy="190" r="5"/>
+        <circle cx="680" cy="120" r="4"/>
+        <circle cx="700" cy="300" r="5"/>
+        <circle cx="120" cy="330" r="4"/>
+        <circle cx="650" cy="390" r="4"/>
       </g>
       <text x="25" y="45" fill="#56edff" font-size="30" font-weight="bold">FALLING BLUE BLOCKS</text>
     </svg>
@@ -239,6 +241,92 @@ footer{text-align:center;color:#7897b3;padding:24px}
     <div class="info">
       <h2>💻 Script Editor</h2>
       <p>Click to open your script page.</p>
+    </div>
+  </a>
+
+  <!-- PHOTO 5: TETRIS -->
+  <a class="card"
+     href="https://mohammedelk2015-collab.github.io/game.html/preview(5).html">
+    <svg class="art" viewBox="0 0 800 450"
+         xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="tetrisSky" x2="0" y2="1">
+          <stop stop-color="#10184d"/>
+          <stop offset="1" stop-color="#080b1d"/>
+        </linearGradient>
+      </defs>
+
+      <rect width="800" height="450" fill="url(#tetrisSky)"/>
+
+      <!-- Neon background grid -->
+      <g stroke="#253b77" stroke-width="2" opacity=".6">
+        <path d="M0 70H800 M0 140H800 M0 210H800 M0 280H800 M0 350H800 M0 420H800"/>
+        <path d="M80 0V450 M160 0V450 M240 0V450 M320 0V450 M400 0V450 M480 0V450 M560 0V450 M640 0V450 M720 0V450"/>
+      </g>
+
+      <!-- Game board -->
+      <rect x="265" y="35" width="270" height="380"
+            rx="8" fill="#080d22" stroke="#43dfff" stroke-width="5"/>
+
+      <!-- Board grid -->
+      <g stroke="#20365c" stroke-width="1">
+        <path d="M292 40V410 M319 40V410 M346 40V410 M373 40V410 M400 40V410 M427 40V410 M454 40V410 M481 40V410 M508 40V410"/>
+        <path d="M270 70H530 M270 100H530 M270 130H530 M270 160H530 M270 190H530 M270 220H530 M270 250H530 M270 280H530 M270 310H530 M270 340H530 M270 370H530 M270 400H530"/>
+      </g>
+
+      <!-- Falling purple T block -->
+      <g stroke="#f2caff" stroke-width="2">
+        <rect x="346" y="75" width="27" height="27" fill="#b34dff"/>
+        <rect x="373" y="75" width="27" height="27" fill="#b34dff"/>
+        <rect x="400" y="75" width="27" height="27" fill="#b34dff"/>
+        <rect x="373" y="102" width="27" height="27" fill="#b34dff"/>
+      </g>
+
+      <!-- Stacked blocks -->
+      <g stroke="#d5ffff" stroke-width="2">
+        <rect x="292" y="370" width="27" height="27" fill="#23dfff"/>
+        <rect x="319" y="370" width="27" height="27" fill="#23dfff"/>
+        <rect x="346" y="370" width="27" height="27" fill="#23dfff"/>
+        <rect x="373" y="370" width="27" height="27" fill="#23dfff"/>
+
+        <rect x="400" y="343" width="27" height="27" fill="#ffd83d"/>
+        <rect x="427" y="343" width="27" height="27" fill="#ffd83d"/>
+        <rect x="400" y="370" width="27" height="27" fill="#ffd83d"/>
+        <rect x="427" y="370" width="27" height="27" fill="#ffd83d"/>
+
+        <rect x="454" y="313" width="27" height="27" fill="#44ef82"/>
+        <rect x="481" y="313" width="27" height="27" fill="#44ef82"/>
+        <rect x="481" y="340" width="27" height="27" fill="#44ef82"/>
+        <rect x="481" y="367" width="27" height="27" fill="#44ef82"/>
+
+        <rect x="292" y="343" width="27" height="27" fill="#ff547b"/>
+        <rect x="292" y="316" width="27" height="27" fill="#ff547b"/>
+        <rect x="319" y="316" width="27" height="27" fill="#ff547b"/>
+      </g>
+
+      <!-- Floating blocks -->
+      <g stroke="#fff" stroke-width="2">
+        <rect x="100" y="180" width="34" height="34" fill="#ff547b"/>
+        <rect x="134" y="180" width="34" height="34" fill="#ff547b"/>
+        <rect x="134" y="214" width="34" height="34" fill="#ff547b"/>
+        <rect x="168" y="214" width="34" height="34" fill="#ff547b"/>
+
+        <rect x="600" y="110" width="34" height="34" fill="#23dfff"/>
+        <rect x="634" y="110" width="34" height="34" fill="#23dfff"/>
+        <rect x="668" y="110" width="34" height="34" fill="#23dfff"/>
+        <rect x="702" y="110" width="34" height="34" fill="#23dfff"/>
+      </g>
+
+      <text x="25" y="48" fill="#43dfff"
+            font-size="32" font-weight="bold">TETRIS</text>
+
+      <text x="25" y="420" fill="#ffffff"
+            font-size="20" font-weight="bold">STACK • CLEAR • WIN!</text>
+    </svg>
+
+    <div class="info">
+      <h2>🧩 Tetris</h2>
+      <p>Click to play Tetris!</p>
     </div>
   </a>
 
