@@ -1,0 +1,600 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GROME.IO</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;overflow:hidden;background:#080d1b;color:white;font-family:Arial}
+canvas{display:block;width:100vw;height:100vh}
+.panel{background:#101a2bee;border:1px solid #28618b;border-radius:12px;padding:12px}
+#hud{position:fixed;inset:0;pointer-events:none}
+#logo{position:absolute;top:12px;left:15px;color:#39e9ff;font-size:29px;font-weight:1000;text-shadow:0 0 15px #00cfff}
+#stats{position:absolute;top:55px;left:12px;line-height:1.8;font-weight:bold}
+#leader{position:absolute;right:12px;top:12px;width:190px}
+#leader h3{color:#ffdc4b;margin:0 0 7px}
+#leader div{font-size:12px;padding:3px}
+#bottom{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);width:min(360px,80vw);text-align:center}
+.bar{height:12px;background:#29344b;border-radius:8px;overflow:hidden;margin:5px 0}
+#health{height:100%;background:#35ef81;width:100%}
+#xp{height:100%;background:#36dfff;width:0}
+#controls{position:absolute;bottom:12px;left:12px;font-size:12px;line-height:1.7}
+#toast{position:absolute;top:38%;width:100%;text-align:center;color:#ffe45a;font-size:26px;font-weight:bold;text-shadow:0 0 15px #ff9e00}
+#menu,#upgradeMenu{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#050a17ee;z-index:5}
+.card{width:min(420px,92vw);padding:25px;text-align:center;background:#111d34;border:2px solid #24dfff;border-radius:20px;box-shadow:0 0 35px #00bfff44}
+h1{font-size:42px;color:#43eaff;margin:5px}
+p{color:#c4d8ef;line-height:1.6}
+button.choice,.mainBtn{display:block;width:100%;padding:13px;margin:8px 0;border:0;border-radius:9px;background:linear-gradient(100deg,#00bfff,#7955ff);color:white;font-weight:bold;font-size:15px;cursor:pointer}
+#upgradeMenu{display:none;pointer-events:auto}
+#upgradeMenu .card{border-color:#b778ff}
+#upgradeMenu h2{color:#d5a3ff}
+.small{font-size:12px}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div id="hud">
+<div id="logo">GROME.IO</div>
+<div id="stats" class="panel">
+💀 Kills: <span id="kills">0</span><br>
+🪙 Coins: <span id="coins">0</span><br>
+⭐ Level: <span id="level">1</span><br>
+⚡ Score: <span id="score">0</span><br>
+🤖 Bots: <span id="botCount">0</span>
+</div>
+<div id="leader" class="panel"><h3>🏆 LEADERBOARD</h3><div id="leaderList"></div></div>
+<div id="controls" class="panel">
+WASD / ARROWS: MOVE<br>
+MOUSE / CLICK: SHOOT<br>
+SHIFT: DASH<br>
+E: UPGRADES<br>
+X: CRAZY HIT
+</div>
+<div id="bottom" class="panel">
+<div>❤️ HEALTH <span id="hpText">100/100</span></div>
+<div class="bar"><div id="health"></div></div>
+<div>⭐ XP <span id="xpText">0/100</span></div>
+<div class="bar"><div id="xp"></div></div>
+</div>
+<div id="toast"></div>
+</div>
+
+<div id="menu"><div class="card">
+<h1>GROME.IO</h1>
+<h2 style="color:#ffe45a">THE ARENA</h2>
+<p>Fight smarter bots, collect coins and survive!</p>
+<p>🤖 Bots dodge obstacles, escape danger, fight and upgrade themselves.</p>
+<button class="mainBtn" onclick="startGame()">▶ PLAY NOW</button>
+<p class="small">WASD • E upgrades • X Crazy Hit</p>
+</div></div>
+
+<div id="upgradeMenu"><div class="card">
+<h2>⚡ GROME.IO UPGRADES</h2>
+<p>Each upgrade costs 10 coins.</p>
+<button class="choice" onclick="buyUpgrade('damage')">💥 DAMAGE +10</button>
+<button class="choice" onclick="buyUpgrade('speed')">🏃 SPEED +0.5</button>
+<button class="choice" onclick="buyUpgrade('health')">❤️ MAX HEALTH +30</button>
+<button class="choice" onclick="buyUpgrade('rapid')">🔫 FASTER SHOOTING</button>
+<button class="choice" onclick="buyUpgrade('radar')">👁️ RADAR RANGE +100</button>
+<p>YOUR COINS: <b id="upgradeCoins">0</b></p>
+<p class="small">Press E to close</p>
+</div></div>
+
+<script>
+const canvas=document.getElementById('game');
+const ctx=canvas.getContext('2d');
+let W,H;
+function resize(){W=canvas.width=innerWidth;H=canvas.height=innerHeight}
+resize();addEventListener('resize',resize);
+
+const EDGE=1500;
+let player,bots=[],bullets=[],coins=[],obstacles=[],particles=[];
+let keys={},mouse={x:innerWidth/2,y:innerHeight/2,down:false};
+let running=false,frame=0,kills=0,totalCoins=0,score=0,level=1,xp=0,xpNeed=100;
+let camX=0,camY=0,shake=0,dashAt=-999,blastAt=-999,lastShot=0;
+let toastUntil=0,upgradeOpen=false;
+
+const rand=(a,b)=>a+Math.random()*(b-a);
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+const norm=(x,y)=>{let l=Math.hypot(x,y)||1;return{x:x/l,y:y/l}};
+function say(s){document.getElementById('toast').textContent=s;toastUntil=frame+75}
+
+function startGame(){
+player={x:0,y:0,r:20,hp:100,maxHp:100,speed:4.1,damage:20,fireRate:100,radar:300,angle:0,blastDamage:65};
+bots=[];bullets=[];coins=[];obstacles=[];particles=[];
+kills=0;totalCoins=0;score=0;level=1;xp=0;xpNeed=100;
+frame=0;dashAt=-999;blastAt=-999;lastShot=0;
+upgradeOpen=false;
+for(let i=0;i<24;i++)spawnBot();
+for(let i=0;i<70;i++){
+ let x,y,tries=0;
+ do{x=rand(-1400,1400);y=rand(-1400,1400);tries++}
+ while(Math.hypot(x,y)<160&&tries<30);
+ obstacles.push({x,y,r:rand(22,42),color:['#304a72','#53377e','#216c75','#70412f'][i%4]});
+}
+for(let i=0;i<55;i++)spawnCoin(rand(-1400,1400),rand(-1400,1400));
+document.getElementById('menu').style.display='none';
+document.getElementById('upgradeMenu').style.display='none';
+running=true;
+}
+
+function spawnBot(){
+let a=rand(0,Math.PI*2),d=rand(450,1100);
+bots.push({
+ id:Math.random(),x:clamp(player.x+Math.cos(a)*d,-1400,1400),
+ y:clamp(player.y+Math.sin(a)*d,-1400,1400),
+ r:18,hp:100,maxHp:100,speed:rand(1.5,2.3),
+ damage:12,fire:rand(5,35),fireRate:rand(28,45),
+ color:['#ff4f75','#ffad42','#b26cff','#65ff89','#ff4fe2'][Math.floor(rand(0,5))],
+ name:['BOT-X','ZAPPER','NOOB PRO','GROME BOT','DESTROYER'][Math.floor(rand(0,5))],
+ radar:340,angle:0,target:null,coins:Math.floor(rand(0,9)),
+ kills:0,botLevel:1,retreatUntil:0,wanderAngle:rand(0,7),
+ wanderUntil:0,stuck:0,lastX:0,lastY:0,upgradeAt:frame+120
+});
+}
+
+function spawnCoin(x,y,value){
+coins.push({x,y,r:9,value:value||(Math.random()<.12?5:1),spin:rand(0,6)});
+}
+function burst(x,y,color,n){
+for(let i=0;i<n;i++){
+ let a=rand(0,Math.PI*2),s=rand(1,7);
+ particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rand(15,38),color,r:rand(2,5)});
+}
+}
+
+// Obstacle avoidance: choose a clear direction instead of pushing into a rock.
+function obstacleSteer(entity,dx,dy){
+let desired=norm(dx,dy);
+let best=null,bestScore=-Infinity;
+const base=Math.atan2(desired.y,desired.x);
+const angles=[0,.45,-.45,.9,-.9,1.4,-1.4,Math.PI];
+for(const offset of angles){
+ let a=base+offset;
+ let vx=Math.cos(a),vy=Math.sin(a);
+ let score=vx*desired.x+vy*desired.y;
+ let clear=true,clearance=Infinity;
+ for(const o of obstacles){
+  let ox=o.x-entity.x,oy=o.y-entity.y;
+  let forward=ox*vx+oy*vy;
+  if(forward<0||forward>entity.r+o.r+35)continue;
+  let side=Math.abs(ox*vy-oy*vx);
+  let gap=side-(entity.r+o.r+9);
+  clearance=Math.min(clearance,gap);
+  if(gap<0){clear=false;score-=3}
+ }
+ if(clear)score+=Math.min(1,Math.max(-1,clearance/50))*.2;
+ if(clear&&score>bestScore){bestScore=score;best={x:vx,y:vy}}
+}
+return best||{x:-desired.y,y:desired.x};
+}
+
+// Separate bots so they don't all crowd into one point.
+function separateBots(b){
+let sx=0,sy=0;
+for(const other of bots){
+ if(other===b)continue;
+ let dx=b.x-other.x,dy=b.y-other.y;
+ let d=Math.hypot(dx,dy);
+ if(d>0&&d<b.r+other.r+12){
+  let strength=(b.r+other.r+12-d)/(b.r+other.r+12);
+  sx+=dx/d*strength;sy+=dy/d*strength;
+ }
+}
+return{x:sx,y:sy};
+}
+
+// Resolve overlaps with obstacles and push entities out of them.
+function resolveObstacles(entity){
+for(let pass=0;pass<3;pass++){
+ for(const o of obstacles){
+  let dx=entity.x-o.x,dy=entity.y-o.y;
+  let d=Math.hypot(dx,dy),min=entity.r+o.r+4;
+  if(d<min){
+   if(d<.001){
+    dx=rand(-1,1);dy=rand(-1,1);d=Math.hypot(dx,dy)||1;
+   }
+   entity.x=o.x+dx/d*min;
+   entity.y=o.y+dy/d*min;
+  }
+ }
+}
+entity.x=clamp(entity.x,-EDGE+entity.r,EDGE-entity.r);
+entity.y=clamp(entity.y,-EDGE+entity.r,EDGE-entity.r);
+}
+
+function toggleUpgrades(){
+if(!running)return;
+upgradeOpen=!upgradeOpen;
+document.getElementById('upgradeMenu').style.display=upgradeOpen?'flex':'none';
+document.getElementById('upgradeCoins').textContent=totalCoins;
+mouse.down=false;
+}
+
+addEventListener('keydown',e=>{
+let k=e.key.toLowerCase();
+if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k))e.preventDefault();
+if(!keys[k]&&k==='e')toggleUpgrades();
+if(!keys[k]&&k==='x')crazyHit();
+if(!keys[k]&&k==='shift')dash();
+keys[k]=true;
+});
+addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+canvas.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY});
+canvas.addEventListener('mousedown',()=>{if(!upgradeOpen)mouse.down=true});
+addEventListener('mouseup',()=>mouse.down=false);
+canvas.addEventListener('touchstart',e=>{
+let t=e.touches[0];mouse.x=t.clientX;mouse.y=t.clientY;
+if(!upgradeOpen)mouse.down=true;
+},{passive:true});
+canvas.addEventListener('touchmove',e=>{
+let t=e.touches[0];mouse.x=t.clientX;mouse.y=t.clientY;
+},{passive:true});
+canvas.addEventListener('touchend',()=>mouse.down=false);
+
+function shoot(source,angle,owner){
+let isPlayer=owner==='player';
+bullets.push({
+x:source.x+Math.cos(angle)*(source.r+8),
+y:source.y+Math.sin(angle)*(source.r+8),
+vx:Math.cos(angle)*(isPlayer?11:7),
+vy:Math.sin(angle)*(isPlayer?11:7),
+r:isPlayer?6:5,life:90,
+damage:isPlayer?player.damage:source.damage,
+owner,color:isPlayer?'#58f5ff':source.color
+});
+}
+
+function dash(){
+if(!running||upgradeOpen||frame-dashAt<35)return;
+dashAt=frame;
+let dx=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0);
+let dy=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0);
+if(!dx&&!dy){dx=Math.cos(player.angle);dy=Math.sin(player.angle)}
+let v=norm(dx,dy);
+player.x+=v.x*150;player.y+=v.y*150;
+resolveObstacles(player);
+burst(player.x,player.y,'#38eaff',20);
+}
+
+function crazyHit(){
+if(!running||upgradeOpen||frame-blastAt<70)return;
+blastAt=frame;shake=14;
+burst(player.x,player.y,'#a46aff',65);
+for(const b of [...bots]){
+if(dist(player,b)<235)damageTarget(b,65,'player');
+}
+say('💥 CRAZY HIT!');
+}
+
+function buyUpgrade(type){
+if(totalCoins<10){say('NOT ENOUGH COINS!');return}
+totalCoins-=10;
+if(type==='damage')player.damage+=10;
+if(type==='speed')player.speed+=.5;
+if(type==='health'){player.maxHp+=30;player.hp=Math.min(player.maxHp,player.hp+30)}
+if(type==='rapid')player.fireRate=Math.max(35,player.fireRate-15);
+if(type==='radar'){player.radar+=100;for(const b of bots)b.radar+=30}
+document.getElementById('upgradeCoins').textContent=totalCoins;
+say('UPGRADE PURCHASED!');
+}
+
+function damageTarget(target,damage,attacker){
+if(target===player){
+player.hp-=damage;
+if(player.hp<=0){player.hp=0;endGame()}
+return;
+}
+if(!bots.includes(target))return;
+target.hp-=damage;
+burst(target.x,target.y,target.color,3);
+if(target.hp<target.maxHp*.3)target.retreatUntil=frame+100;
+if(target.hp>0)return;
+
+bots.splice(bots.indexOf(target),1);
+if(attacker==='player'){
+kills++;totalCoins+=2;score+=100;xp+=30;checkLevel();
+}else{
+const owner=bots.find(b=>b.id===attacker);
+if(owner){owner.kills++;owner.coins+=3;owner.hp=Math.min(owner.maxHp,owner.hp+12);owner.retreatUntil=0}
+score+=25;
+}
+spawnCoin(target.x,target.y,2);
+burst(target.x,target.y,target.color,25);
+while(bots.length<24)spawnBot();
+}
+
+function checkLevel(){
+while(xp>=xpNeed){
+xp-=xpNeed;level++;xpNeed=Math.floor(xpNeed*1.3);
+player.maxHp+=10;player.hp=Math.min(player.maxHp,player.hp+25);
+say('LEVEL UP! +HEALTH');
+}
+}
+
+function botUpgrade(b){
+if(b.coins<3)return;
+b.coins-=3;b.botLevel++;
+let choice=Math.floor(rand(0,4));
+if(choice===0)b.damage+=3;
+if(choice===1)b.speed+=.15;
+if(choice===2){b.maxHp+=20;b.hp=Math.min(b.maxHp,b.hp+20)}
+if(choice===3)b.fireRate=Math.max(12,b.fireRate-3);
+b.color=['#ffdc4a','#53f5ff','#ff75ed','#9bff70'][choice];
+burst(b.x,b.y,b.color,12);
+}
+
+function endGame(){
+running=false;upgradeOpen=false;
+document.getElementById('upgradeMenu').style.display='none';
+document.getElementById('menu').style.display='flex';
+document.querySelector('#menu h1').textContent='GROME.IO';
+document.querySelector('#menu h2').textContent='GAME OVER — '+Math.floor(score);
+document.querySelector('#menu .card p').innerHTML='Kills: '+kills+' • Coins: '+totalCoins+' • Level: '+level;
+document.querySelector('#menu button').textContent='↻ PLAY AGAIN';
+}
+
+function update(){
+if(!running||upgradeOpen)return;
+frame++;
+
+let dx=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0);
+let dy=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0);
+let v=norm(dx,dy);
+player.x+=v.x*player.speed;player.y+=v.y*player.speed;
+resolveObstacles(player);
+camX=player.x-W/2;camY=player.y-H/2;
+player.angle=Math.atan2(mouse.y-H/2,mouse.x-W/2);
+if((mouse.down||keys[' '])&&frame-lastShot>=player.fireRate){
+shoot(player,player.angle,'player');lastShot=frame;
+}
+
+// BOT AI
+for(const b of [...bots]){
+if(!bots.includes(b))continue;
+
+if(frame>=b.upgradeAt){
+if(b.coins>=3)botUpgrade(b);
+b.upgradeAt=frame+rand(90,170);
+}
+if(b.hp<b.maxHp&&frame%3===0)b.hp=Math.min(b.maxHp,b.hp+.08);
+
+let nearest=null,nearestD=Infinity;
+for(const t of [player,...bots.filter(o=>o!==b)]){
+if(t===player&&player.hp<=0)continue;
+let d=dist(b,t);
+if(d<b.radar&&d<nearestD){nearest=t;nearestD=d}
+}
+
+let moveX=0,moveY=0;
+if(nearest){
+let dx=nearest.x-b.x,dy=nearest.y-b.y;
+let direction=norm(dx,dy);
+b.angle=Math.atan2(dy,dx);
+let fleeing=b.hp<b.maxHp*.3||frame<b.retreatUntil;
+
+if(fleeing){
+b.retreatUntil=Math.max(b.retreatUntil,frame+35);
+moveX=-direction.x;moveY=-direction.y;
+}else{
+let desiredDistance=nearestD>125?1:.45;
+moveX=direction.x*desiredDistance;
+moveY=direction.y*desiredDistance;
+if(nearestD<420){
+b.fire--;
+if(b.fire<=0){
+shoot(b,b.angle+rand(-.18,.18),b.id);
+b.fire=b.fireRate;
+}
+}
+}
+}else{
+if(frame>b.wanderUntil){
+b.wanderAngle=rand(0,Math.PI*2);
+b.wanderUntil=frame+rand(25,65);
+}
+moveX=Math.cos(b.wanderAngle);
+moveY=Math.sin(b.wanderAngle);
+b.angle=b.wanderAngle;
+}
+
+// Apply obstacle avoidance and bot-to-bot separation.
+let avoid=obstacleSteer(b,moveX,moveY);
+let separation=separateBots(b);
+moveX=avoid.x+separation.x*1.5;
+moveY=avoid.y+separation.y*1.5;
+
+// If blocked, try another direction and track progress.
+let move=norm(moveX,moveY);
+let oldX=b.x,oldY=b.y;
+let step=b.speed*(b.hp<b.maxHp*.3?1.45:1);
+b.x+=move.x*step;
+b.y+=move.y*step;
+resolveObstacles(b);
+
+let moved=Math.hypot(b.x-oldX,b.y-oldY);
+if(moved<step*.25)b.stuck++;else b.stuck=0;
+
+// If repeatedly blocked, change direction and sidestep.
+if(b.stuck>8){
+let side=Math.random()<.5?1:-1;
+b.wanderAngle=Math.atan2(move.y,move.x)+side*1.8;
+b.wanderUntil=frame+45;
+b.x+=Math.cos(b.wanderAngle)*b.speed*2;
+b.y+=Math.sin(b.wanderAngle)*b.speed*2;
+resolveObstacles(b);
+b.stuck=0;
+}
+
+// Keep a safe distance from other bots to prevent clumping.
+for(const other of bots){
+if(other===b)continue;
+let ox=b.x-other.x,oy=b.y-other.y,d=Math.hypot(ox,oy);
+let min=b.r+other.r+2;
+if(d>0&&d<min){
+b.x+=ox/d*(min-d)*.55;
+b.y+=oy/d*(min-d)*.55;
+}
+}
+resolveObstacles(b);
+
+// Detect repeated blocking even when near the arena boundary.
+if(Math.hypot(b.x-b.lastX,b.y-b.lastY)<.2)b.stuck++;
+b.lastX=b.x;b.lastY=b.y;
+
+// Bots collect coins for their own upgrades.
+for(let i=coins.length-1;i>=0;i--){
+let c=coins[i];
+if(dist(b,c)<b.r+c.r+4){
+b.coins+=c.value;
+b.hp=Math.min(b.maxHp,b.hp+2);
+coins.splice(i,1);
+break;
+}
+}
+}
+
+// PROJECTILES
+for(let i=bullets.length-1;i>=0;i--){
+let b=bullets[i];
+b.x+=b.vx;b.y+=b.vy;b.life--;
+let hit=false;
+if(b.owner==='player'){
+for(const t of [...bots]){
+if(dist(b,t)<b.r+t.r){damageTarget(t,b.damage,'player');hit=true;break}
+}
+}else if(dist(b,player)<player.r+b.r){
+damageTarget(player,b.damage,b.owner);
+burst(b.x,b.y,'#ff526d',6);hit=true;
+if(!running)return;
+}else{
+for(const t of [...bots]){
+if(t.id===b.owner)continue;
+if(dist(b,t)<b.r+t.r){damageTarget(t,b.damage,b.owner);hit=true;break}
+}
+}
+if(hit||b.life<=0)bullets.splice(i,1);
+}
+
+// PLAYER COINS
+for(let i=coins.length-1;i>=0;i--){
+let c=coins[i];c.spin+=.1;
+if(dist(c,player)<player.r+c.r+5){
+totalCoins+=c.value;score+=c.value*10;xp+=c.value*2;
+burst(c.x,c.y,'#ffdf4b',8);coins.splice(i,1);checkLevel();
+}
+}
+while(coins.length<55)spawnCoin(rand(-1400,1400),rand(-1400,1400));
+
+for(let i=particles.length-1;i>=0;i--){
+let p=particles[i];p.x+=p.vx;p.y+=p.vy;
+p.vx*=.97;p.vy*=.97;p.life--;
+if(p.life<=0)particles.splice(i,1);
+}
+shake*=.85;
+
+document.getElementById('kills').textContent=kills;
+document.getElementById('coins').textContent=totalCoins;
+document.getElementById('level').textContent=level;
+document.getElementById('score').textContent=Math.floor(score);
+document.getElementById('botCount').textContent=bots.length;
+document.getElementById('hpText').textContent=Math.ceil(player.hp)+'/'+player.maxHp;
+document.getElementById('health').style.width=player.hp/player.maxHp*100+'%';
+document.getElementById('xpText').textContent=xp+'/'+xpNeed;
+document.getElementById('xp').style.width=xp/xpNeed*100+'%';
+
+document.getElementById('leaderList').innerHTML=[
+{name:'YOU',kills,player:true},...bots.map(b=>({name:b.name,kills:b.kills||0}))
+].sort((a,b)=>b.kills-a.kills).slice(0,6).map((b,i)=>
+'<div style="color:'+(b.player?'#44edff':'#f4d1ff')+'">'+
+(i+1)+'. '+b.name+' — '+b.kills+'</div>').join('');
+
+if(frame>toastUntil)document.getElementById('toast').textContent='';
+}
+
+function drawTank(t,isPlayer){
+ctx.save();ctx.translate(t.x,t.y);ctx.rotate(t.angle);
+ctx.shadowColor=t.color;ctx.shadowBlur=12;
+ctx.fillStyle='#17243b';ctx.strokeStyle=t.color;ctx.lineWidth=4;
+ctx.fillRect(-t.r*.5,-t.r*.65,t.r*1.5,t.r*1.3);
+ctx.fillStyle=t.color;ctx.fillRect(0,-t.r*.22,t.r+12,t.r*.44);
+ctx.rotate(-t.angle);
+ctx.fillStyle=t.color;ctx.beginPath();
+for(let i=0;i<6;i++){
+let a=i*Math.PI/3,x=Math.cos(a)*t.r,y=Math.sin(a)*t.r;
+i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+}
+ctx.closePath();ctx.fill();ctx.strokeStyle='white';ctx.lineWidth=1.5;ctx.stroke();
+ctx.shadowBlur=0;ctx.fillStyle='white';ctx.font='bold 11px Arial';ctx.textAlign='center';
+ctx.fillText(isPlayer?'YOU':t.name,0,-t.r-17);
+
+if(!isPlayer){
+ctx.fillStyle='#33243c';ctx.fillRect(-t.r,-t.r-12,t.r*2,5);
+ctx.fillStyle=t.hp<t.maxHp*.3?'#ff9d40':'#ff4f75';
+ctx.fillRect(-t.r,-t.r-12,t.r*2*clamp(t.hp/t.maxHp,0,1),5);
+if(t.hp<t.maxHp*.3){
+ctx.fillStyle='#ffb35b';ctx.font='bold 9px Arial';
+ctx.fillText('RETREAT!',0,t.r+13);
+}
+}
+ctx.restore();
+}
+
+function draw(){
+ctx.fillStyle='#080d1b';ctx.fillRect(0,0,W,H);
+if(!player)return;
+ctx.save();
+ctx.translate(-camX+(shake?rand(-shake,shake):0),-camY+(shake?rand(-shake,shake):0));
+ctx.strokeStyle='#192a46';ctx.lineWidth=1;
+for(let x=Math.floor(camX/50)*50;x<camX+W+50;x+=50){
+ctx.beginPath();ctx.moveTo(x,-EDGE);ctx.lineTo(x,EDGE);ctx.stroke();
+}
+for(let y=Math.floor(camY/50)*50;y<camY+H+50;y+=50){
+ctx.beginPath();ctx.moveTo(-EDGE,y);ctx.lineTo(EDGE,y);ctx.stroke();
+}
+ctx.strokeStyle='#24dfff';ctx.lineWidth=4;ctx.strokeRect(-EDGE,-EDGE,EDGE*2,EDGE*2);
+
+for(const o of obstacles){
+if(Math.abs(o.x-player.x)>W+100||Math.abs(o.y-player.y)>H+100)continue;
+ctx.fillStyle=o.color;ctx.strokeStyle='#8ebaff';ctx.lineWidth=2;
+ctx.beginPath();
+for(let k=0;k<7;k++){
+let a=k*Math.PI*2/7;
+let x=o.x+Math.cos(a)*o.r*(k%2?.8:1);
+let y=o.y+Math.sin(a)*o.r*(k%2?.8:1);
+k?ctx.lineTo(x,y):ctx.moveTo(x,y);
+}
+ctx.closePath();ctx.fill();ctx.stroke();
+}
+for(const c of coins){
+ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.spin);
+ctx.fillStyle=c.value===5?'#52f4ff':'#ffdc4a';
+ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=12;
+ctx.beginPath();ctx.moveTo(0,-c.r);ctx.lineTo(c.r*.7,0);
+ctx.lineTo(0,c.r);ctx.lineTo(-c.r*.7,0);ctx.closePath();ctx.fill();
+ctx.restore();
+}
+for(const b of bullets){
+ctx.fillStyle=b.color;ctx.shadowColor=b.color;ctx.shadowBlur=10;
+ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();
+}
+ctx.shadowBlur=0;
+for(const b of bots)drawTank(b,false);
+drawTank(player,true);
+for(const p of particles){
+ctx.globalAlpha=Math.max(0,p.life/38);
+ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
+}
+ctx.globalAlpha=1;
+ctx.restore();
+}
+
+function loop(){update();draw();requestAnimationFrame(loop)}
+loop();
+</script>
+</body>
+</html>
