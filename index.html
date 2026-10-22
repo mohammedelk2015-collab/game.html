@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title> Games - PLAYHOUS</title>
+<title>Games - PLAYHOUS</title>
 
 <style>
 *{box-sizing:border-box}
@@ -31,11 +32,11 @@ h1{
 
 header p{color:#a9c7df}
 
-main{max-width:1200px;margin:auto;padding:22px}
+main{max-width:1500px;margin:auto;padding:22px}
 
 .gallery{
   display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-template-columns:repeat(3,minmax(0,1fr));
   gap:18px;
 }
 
@@ -48,12 +49,13 @@ main{max-width:1200px;margin:auto;padding:22px}
   border-radius:14px;
   overflow:hidden;
   box-shadow:0 8px 24px #0003;
-  transition:transform .2s,border-color .2s;
+  transition:transform .2s,border-color .2s,box-shadow .2s;
 }
 
 .card:hover{
   transform:translateY(-5px);
   border-color:#32d3ff;
+  box-shadow:0 10px 30px #00bfff22;
 }
 
 .art{
@@ -73,6 +75,10 @@ main{max-width:1200px;margin:auto;padding:22px}
 .info p{margin:0;color:#c0d6e8;line-height:1.5}
 
 footer{text-align:center;color:#7897b3;padding:24px}
+
+@media(min-width:1100px){
+  .gallery{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
 
 @media(max-width:650px){
   .gallery{grid-template-columns:1fr}
@@ -319,46 +325,140 @@ footer{text-align:center;color:#7897b3;padding:24px}
 <stop offset="1" stop-color="#b90035"/>
 </linearGradient>
 </defs>
-
 <rect width="800" height="450" fill="url(#unoBg)"/>
-
 <g fill="none" stroke="#a95cff" opacity=".25" stroke-width="3">
 <circle cx="400" cy="225" r="175"/>
 <circle cx="400" cy="225" r="135"/>
 <path d="M0 100L800 350M0 350L800 100"/>
 </g>
-
-<!-- Blue card -->
 <g transform="translate(125 105) rotate(-18 100 125)">
 <rect x="0" y="0" width="190" height="250" rx="18" fill="#1675ed" stroke="white" stroke-width="5"/>
 <ellipse cx="95" cy="125" rx="65" ry="95" fill="#fff" transform="rotate(-25 95 125)"/>
 <text x="95" y="150" font-size="76" text-anchor="middle" font-weight="bold" fill="#1675ed">2</text>
 <text x="18" y="42" font-size="30" font-weight="bold" fill="white">2</text>
 </g>
-
-<!-- Green card -->
 <g transform="translate(480 115) rotate(16 95 120)">
 <rect x="0" y="0" width="185" height="245" rx="18" fill="#16b957" stroke="white" stroke-width="5"/>
 <ellipse cx="92" cy="122" rx="63" ry="92" fill="white" transform="rotate(-25 92 122)"/>
 <text x="92" y="147" font-size="70" text-anchor="middle" font-weight="bold" fill="#16b957">7</text>
 <text x="17" y="40" font-size="28" font-weight="bold" fill="white">7</text>
 </g>
-
-<!-- Red center card -->
 <g transform="translate(310 70) rotate(-4 95 125)">
 <rect width="190" height="255" rx="18" fill="url(#unoRed)" stroke="white" stroke-width="6"/>
 <ellipse cx="95" cy="128" rx="67" ry="98" fill="#fff" transform="rotate(-25 95 128)"/>
 <text x="95" y="147" font-size="61" font-weight="bold" font-style="italic" text-anchor="middle" fill="#ed173d">UNO</text>
 <text x="17" y="42" font-size="27" font-weight="bold" fill="white">UNO</text>
 </g>
-
 <text x="400" y="405" text-anchor="middle" fill="#ffe44d" font-size="43" font-weight="bold">UNO CARD BATTLE!</text>
 <text x="400" y="435" text-anchor="middle" fill="white" font-size="19">MATCH • PLAY • WIN</text>
 </svg>
-
 <div class="info">
 <h2>🃏 UNO</h2>
 <p>Click to play UNO! Match your cards and try to win.</p>
+</div>
+</a>
+
+<!-- PHOTO 7: TWO CUBE FIGHTING -->
+<a class="card" href="https://mohammedelk2015-collab.github.io/game.html/preview%287%29.html">
+<svg class="art" viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="fightBg" x2="1" y2="1">
+<stop stop-color="#071b40"/>
+<stop offset=".5" stop-color="#101b39"/>
+<stop offset="1" stop-color="#330d29"/>
+</linearGradient>
+<linearGradient id="blueCube" x2="1" y2="1">
+<stop stop-color="#4eeaff"/>
+<stop offset="1" stop-color="#0060ed"/>
+</linearGradient>
+<linearGradient id="redCube" x2="1" y2="1">
+<stop stop-color="#ff8585"/>
+<stop offset="1" stop-color="#e7193f"/>
+</linearGradient>
+<radialGradient id="blueBall">
+<stop stop-color="#fff"/>
+<stop offset=".35" stop-color="#67f5ff"/>
+<stop offset="1" stop-color="#008cff"/>
+</radialGradient>
+<radialGradient id="redBall">
+<stop stop-color="#fff"/>
+<stop offset=".35" stop-color="#ffb46c"/>
+<stop offset="1" stop-color="#ff2548"/>
+</radialGradient>
+<filter id="glow">
+<feGaussianBlur stdDeviation="8" result="blur"/>
+<feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter>
+</defs>
+
+<rect width="800" height="450" fill="url(#fightBg)"/>
+
+<!-- Arena lights -->
+<path d="M0 90L800 25M0 160L800 95M0 230L800 165"
+stroke="#285dff" stroke-width="3" opacity=".25"/>
+<path d="M800 80L0 20M800 150L0 90"
+stroke="#ff244e" stroke-width="3" opacity=".2"/>
+
+<!-- Battle floor -->
+<path d="M0 330L400 245 800 330 400 450Z" fill="#111e3b" stroke="#2e9dff" stroke-width="3"/>
+<path d="M0 365L400 280 800 365M100 390L400 325 700 390M200 415L400 370 600 415"
+fill="none" stroke="#2769a7" stroke-width="2" opacity=".8"/>
+<path d="M200 288L200 450M300 267L300 450M500 267L500 450M600 288L600 450"
+stroke="#2769a7" stroke-width="2" opacity=".7"/>
+
+<!-- Blue cube fighter -->
+<g transform="translate(145 180) rotate(-8 100 100)">
+<path d="M20 30L115 0 210 35 112 70Z" fill="#83f6ff" stroke="#b8fbff" stroke-width="4"/>
+<path d="M20 30L112 70 112 205 20 165Z" fill="url(#blueCube)" stroke="#b8fbff" stroke-width="4"/>
+<path d="M112 70L210 35 210 170 112 205Z" fill="#0756c9" stroke="#b8fbff" stroke-width="4"/>
+<!-- Angry eyes -->
+<path d="M48 91L82 99M48 99L82 91" stroke="#06162c" stroke-width="9" stroke-linecap="round"/>
+<path d="M133 94L166 84M133 84L166 94" stroke="#06162c" stroke-width="9" stroke-linecap="round"/>
+<path d="M72 128L143 119" stroke="#06162c" stroke-width="8" stroke-linecap="round"/>
+<!-- Arms -->
+<path d="M25 90L-18 120 0 148 32 130" fill="none" stroke="#168fff" stroke-width="25" stroke-linecap="round"/>
+<path d="M193 93L237 110 255 89" fill="none" stroke="#168fff" stroke-width="25" stroke-linecap="round"/>
+<!-- Legs -->
+<path d="M48 174L35 222 64 232 89 187M144 191L159 230 190 220 179 174"
+fill="#0860d9" stroke="#67eaff" stroke-width="6" stroke-linejoin="round"/>
+</g>
+
+<!-- Red cube fighter -->
+<g transform="translate(500 180) rotate(8 100 100)">
+<path d="M20 35L115 0 210 30 112 70Z" fill="#ffb3a8" stroke="#ffd5d5" stroke-width="4"/>
+<path d="M20 35L112 70 112 205 20 165Z" fill="url(#redCube)" stroke="#ffd5d5" stroke-width="4"/>
+<path d="M112 70L210 30 210 165 112 205Z" fill="#b80c36" stroke="#ffd5d5" stroke-width="4"/>
+<!-- Angry eyes -->
+<path d="M45 91L80 82M45 82L80 91M135 85L169 95M135 95L169 85"
+stroke="#400619" stroke-width="9" stroke-linecap="round"/>
+<path d="M75 124L145 130" stroke="#400619" stroke-width="8" stroke-linecap="round"/>
+<!-- Arms -->
+<path d="M28 92L-10 76 -25 100" fill="none" stroke="#ed244a" stroke-width="25" stroke-linecap="round"/>
+<path d="M194 95L239 120 258 96" fill="none" stroke="#ed244a" stroke-width="25" stroke-linecap="round"/>
+<!-- Legs -->
+<path d="M49 174L34 220 64 232 90 187M144 191L159 230 190 219 179 174"
+fill="#bd123b" stroke="#ffb0ba" stroke-width="6" stroke-linejoin="round"/>
+</g>
+
+<!-- Glowing energy balls -->
+<g filter="url(#glow)">
+<circle cx="320" cy="110" r="22" fill="url(#blueBall)"/>
+<circle cx="390" cy="220" r="19" fill="url(#blueBall)"/>
+<circle cx="470" cy="145" r="22" fill="url(#redBall)"/>
+<circle cx="430" cy="315" r="17" fill="url(#redBall)"/>
+<circle cx="660" cy="270" r="14" fill="url(#redBall)"/>
+</g>
+
+<!-- Motion streaks -->
+<path d="M270 115L220 130M280 130L245 148M500 140L550 125M510 155L570 150"
+stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".8"/>
+
+<text x="400" y="43" text-anchor="middle" fill="#fff" font-size="34" font-weight="bold">CUBE BATTLE!</text>
+<text x="400" y="425" text-anchor="middle" fill="#60eaff" font-size="22" font-weight="bold">⚡ TWO CUBES • ENERGY BALLS ⚡</text>
+</svg>
+<div class="info">
+<h2>⚔️ Two Cube Fighting</h2>
+<p>Click to play the two-cube fighting game.</p>
 </div>
 </a>
 
