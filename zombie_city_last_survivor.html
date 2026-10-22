@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zombie City: Last Survivor</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080d13;color:#f2f5f7;font-family:Arial,sans-serif}canvas{display:block}
+#hud{position:fixed;inset:0;pointer-events:none;text-shadow:0 2px 4px #000}
+.panel{background:#0a111bd9;border:1px solid #b8c8d044;border-radius:10px;padding:10px 12px;backdrop-filter:blur(5px)}
+#stats{position:absolute;left:14px;top:14px;width:245px}
+#title{font-weight:900;letter-spacing:1px;color:#d7e9f2;font-size:15px;margin-bottom:8px}
+.barline{display:flex;justify-content:space-between;font-size:12px;margin:7px 0 3px}
+.bar{height:9px;background:#29313a;border-radius:8px;overflow:hidden}.fill{height:100%;width:100%;transition:width .15s}
+#healthFill{background:#d64b4b}#staminaFill{background:#e6bd4b}#foodFill{background:#6ebc72}
+#rightStats{position:absolute;right:14px;top:14px;text-align:right;min-width:155px}
+#weapon{font-size:13px;margin-top:5px;color:#e2e9ed}
+#centerMsg{position:absolute;left:50%;top:18%;transform:translateX(-50%);text-align:center;font-weight:bold;font-size:17px;max-width:80vw;color:#f6e4c7;display:none}
+#crosshair{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:22px;color:#fff}
+#bottom{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);text-align:center;width:min(700px,94vw);font-size:12px;color:#e2e7ea}
+#inventory{position:absolute;left:14px;bottom:14px;max-width:250px;font-size:12px;line-height:1.5}
+#prompt{position:absolute;left:50%;bottom:78px;transform:translateX(-50%);font-weight:bold;text-align:center;background:#0a111bd9;border:1px solid #ffffff33;border-radius:8px;padding:8px 12px;display:none}
+#overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(#050a10d9,#070b11f2);z-index:5;padding:18px}
+.card{width:min(590px,95vw);background:#111a23;border:1px solid #71839166;border-radius:18px;padding:26px;box-shadow:0 20px 90px #000b}
+h1{font-size:clamp(27px,5vw,43px);margin:0 0 8px;letter-spacing:1px}h1 span{color:#c94a4a}.sub{color:#b9c8d0;line-height:1.55;font-size:14px}.typeLegend{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.typeLegend span{font-size:11px;padding:5px 8px;border-radius:6px;background:#202b34;border:1px solid #ffffff20}
+button{background:#b93e3e;color:white;border:0;border-radius:9px;padding:13px 17px;font-weight:900;letter-spacing:.5px;cursor:pointer;margin:8px 5px 0 0}button:hover{filter:brightness(1.15)}button.secondary{background:#293844}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}.control{background:#0a121a;padding:10px;border-radius:8px;color:#d6e0e5;font-size:12px}.control b{color:#fff}
+#toast{position:fixed;top:30%;left:50%;transform:translateX(-50%);background:#101a22ee;border:1px solid #fff3;border-radius:9px;padding:10px 16px;z-index:4;display:none;text-align:center;max-width:85vw;font-weight:bold}
+#damage{position:fixed;inset:0;background:#c3000028;pointer-events:none;opacity:0;transition:opacity .12s}
+#hotbar{position:fixed;left:50%;bottom:53px;transform:translateX(-50%);display:flex;gap:5px;pointer-events:auto;z-index:2;padding:6px;background:#07101bdc;border:1px solid #9fb5c555;border-radius:12px;backdrop-filter:blur(6px);max-width:96vw}
+.slot{position:relative;width:54px;height:56px;flex:0 0 54px;border:2px solid #647582;background:linear-gradient(145deg,#1b2935,#0a1119);border-radius:7px;color:#fff;margin:0;padding:3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;letter-spacing:0;font-size:10px;font-weight:700}
+.slot .num{position:absolute;left:4px;top:2px;font-size:10px;color:#dbe7ed}.slot .ico{font-size:23px;line-height:25px}.slot .count{position:absolute;right:4px;bottom:2px;color:#ffe7a6;font-size:10px}.slot.active{border:2px solid #ffe66a;box-shadow:0 0 12px #ffe66a88;background:linear-gradient(145deg,#39452f,#182017)}
+@media(max-width:600px){#hotbar{bottom:65px;gap:2px;padding:4px}.slot{width:38px;height:47px;flex-basis:38px}.slot .ico{font-size:18px;line-height:20px}.slot .label{font-size:8px}#bottom{display:none}}
+@media(max-width:600px){#stats{width:190px;left:7px;top:7px;padding:8px}#rightStats{right:7px;top:7px;padding:8px;font-size:12px}#inventory{left:7px;bottom:7px;max-width:190px}#bottom{bottom:7px;font-size:10px} .controls{grid-template-columns:1fr 1fr} }
+</style>
+</head>
+<body>
+<div id="hud">
+ <div id="stats" class="panel"><div id="title">☣ ZOMBIE CITY: LAST SURVIVOR</div>
+  <div class="barline"><b>HEALTH</b><span id="healthText">100 / 100</span></div><div class="bar"><div id="healthFill" class="fill"></div></div>
+  <div class="barline"><b>HUNGER</b><span id="foodText">100%</span></div><div class="bar"><div id="foodFill" class="fill"></div></div>
+  <div class="barline"><b>STAMINA</b><span id="staminaText">100%</span></div><div class="bar"><div id="staminaFill" class="fill"></div></div>
+ </div>
+ <div id="rightStats" class="panel"><b id="timeText">NIGHT 1 · 00:00</b><div id="zombieText">Zombies nearby: 0</div><div id="weapon">Weapon: Wooden bat</div><div id="baseText">Base integrity: 100%</div></div>
+ <div id="crosshair">+</div><div id="centerMsg"></div>
+ <div id="inventory" class="panel">🎒 <span id="invText">Wood 0 · Scrap 0 · Food 0</span><br>🧰 <span id="lootText">Loot crates opened: 0</span><br><span id="heldText">Held: Bat</span></div>
+ <div id="backpack" class="panel" style="display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(390px,90vw);font-size:14px;line-height:1.8"><b>🎒 BACKPACK (2 to close)</b><div id="backpackText"></div></div>
+ <div id="hotbar" aria-label="Hotbar">
+  <button class="slot active" data-slot="1"><span class="num">1</span><span class="ico">🏏</span><span class="label">BAT</span></button>
+  <button class="slot" data-slot="2"><span class="num">2</span><span class="ico">🩹</span><span class="label">MEDKIT</span><span class="count" id="count2">0</span></button>
+  <button class="slot" data-slot="3"><span class="num">3</span><span class="ico">🍔</span><span class="label">BURGER</span><span class="count" id="count3">0</span></button>
+  <button class="slot" data-slot="4"><span class="num">4</span><span class="ico">🔫</span><span class="label">GUN</span><span class="count" id="count4">0</span></button>
+  <button class="slot" data-slot="5"><span class="num">5</span><span class="ico">📘</span><span class="label">BLUEPRINT</span><span class="count" id="count5">0</span></button>
+  <button class="slot" data-slot="6"><span class="num">6</span><span class="ico">🪤</span><span class="label">TRAP</span><span class="count" id="count6">0</span></button>
+  <button class="slot" data-slot="7"><span class="num">7</span><span class="ico">🪵</span><span class="label">WOOD</span><span class="count" id="count7">0</span></button>
+  <button class="slot" data-slot="8"><span class="num">8</span><span class="ico">⚙️</span><span class="label">SCRAP</span><span class="count" id="count8">0</span></button>
+  <button class="slot" data-slot="9"><span class="num">9</span><span class="ico">🎒</span><span class="label">BAG</span></button>
+ </div>
+ <div id="prompt"></div>
+ <div id="bottom" class="panel">WASD / ZQSD move · Left click hit/shoot · Right click build/place · 1-6 items · E collect · F throw · R crate · 2 backpack · X use item · Esc pause</div>
+</div>
+<div id="toast"></div><div id="damage"></div>
+<div id="overlay"><div class="card">
+ <h1>☣ ZOMBIE CITY:<br><span>LAST SURVIVOR</span></h1>
+ <p class="sub">The city went silent three nights ago. Your safehouse is barely holding together. Search abandoned streets for supplies, keep your hunger down, build barricades, and survive the infected after dark. Day lasts 1 minute; night lasts 3 minutes, when 30 zombies appear.</p>
+ <div class="controls">
+  <div class="control"><b>W A S D / Z Q S D</b> — Move</div><div class="control"><b>Mouse</b> — Look around</div>
+  <div class="control"><b>Left click</b> — Hit / shoot · <b>Right click</b> — Build / place trap</div><div class="control"><b>R</b> — Open crate · <b>E</b> — Collect · <b>F</b> — Throw</div>
+  <div class="control"><b>1-6</b> — Bat, medkit, burger, gun, blueprint, trap</div><div class="control"><b>7-9</b> — Wood, scrap, backpack · <b>X</b> Use held food/medkit</div><div class="control"><b>B</b> — Build wall/barricade (3 wood)</div><div class="control"><b>Shift</b> — Run (uses stamina)</div>
+ </div>
+ <p class="sub">Tip: the blue-lit safehouse is your base. Infected wander the streets, then track you when you get close. Watch for special infected: Runners rush you, Brutes hit hard, and Spitters launch toxic globs. Loot crates glow faintly. The 9-slot hotbar lets you select every item.</p><div class="typeLegend"><span>🧟 SHAMBLER</span><span>⚡ RUNNER</span><span>🦍 BRUTE</span><span>🟢 SPITTER</span></div>
+ <button id="startBtn">ENTER THE CITY</button><button id="howBtn" class="secondary">SURVIVAL TIPS</button>
+ <p id="tipText" class="sub" style="display:none">Stay moving, loot the crates, and retreat through your base doorway. Food restores hunger. Barricades slow zombies, but they can break through. Survive as long as you can.</p>
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+(()=> {
+'use strict';
+const $=id=>document.getElementById(id);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x080e16);scene.fog=new THREE.FogExp2(0x080e16,.012);
+const camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,.1,260);
+const renderer=new THREE.WebGLRenderer({antialias:false});
+renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;document.body.insertBefore(renderer.domElement,document.body.firstChild);
+renderer.domElement.style.position='fixed';renderer.domElement.style.inset='0';renderer.domElement.style.zIndex='0';
+$('hud').style.zIndex='1';
+scene.add(new THREE.HemisphereLight(0x9aacc4,0x20251d,1.35));
+const moon=new THREE.DirectionalLight(0x9bb9e7,1.2);moon.position.set(-30,55,20);moon.castShadow=true;moon.shadow.mapSize.set(1024,1024);scene.add(moon);
+const lampLight=new THREE.PointLight(0x6ca9ff,2.2,22);lampLight.position.set(0,5,0);scene.add(lampLight);
+const mats={grass:new THREE.MeshStandardMaterial({color:0x293d30,roughness:1}),road:new THREE.MeshStandardMaterial({color:0x252b31,roughness:1}),concrete:new THREE.MeshStandardMaterial({color:0x4c5358}),brick:new THREE.MeshStandardMaterial({color:0x65483e}),darkbrick:new THREE.MeshStandardMaterial({color:0x343b43}),wood:new THREE.MeshStandardMaterial({color:0x765235}),metal:new THREE.MeshStandardMaterial({color:0x58636b,metalness:.45,roughness:.7}),glass:new THREE.MeshStandardMaterial({color:0x223d50,emissive:0x102a3c}),leaf:new THREE.MeshStandardMaterial({color:0x263f31}),zombie:new THREE.MeshStandardMaterial({color:0x557c4c}),skin:new THREE.MeshStandardMaterial({color:0x8ca47b}),player:new THREE.MeshStandardMaterial({color:0x385b77}),crate:new THREE.MeshStandardMaterial({color:0x7e5a32,emissive:0x241000}),glow:new THREE.MeshStandardMaterial({color:0x8acbff,emissive:0x397fbd,emissiveIntensity:1.2}),red:new THREE.MeshStandardMaterial({color:0x9c3434})};
+const boxGeo=new THREE.BoxGeometry(1,1,1);
+function cube(x,y,z,sx,sy,sz,mat,collide=true){const m=new THREE.Mesh(boxGeo,mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;m.receiveShadow=true;scene.add(m);if(collide)obstacles.push({x,z,hx:sx/2,hz:sz/2,top:y+sy/2,mesh:m});return m}
+let obstacles=[],zombies=[],crates=[],barricades=[],particles=[],shards=[],spitballs=[],droppedItems=[],traps=[];
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(220,220),mats.grass);ground.rotation.x=-Math.PI/2;ground.position.y=-.08;ground.receiveShadow=true;scene.add(ground);
+// Road grid and broken lane markings
+for(let z=-90;z<=90;z+=28){cube(0,.005,z,220,.04,9,mats.road,false);for(let x=-100;x<100;x+=10)cube(x,.04,z,3,.025,.12,new THREE.MeshStandardMaterial({color:0x777a70}),false)}
+for(let x=-84;x<=84;x+=28)cube(x,.006,0,9,.04,220,mats.road,false);
+// City blocks: low, blocky buildings, windows, alley clutter
+function building(x,z,w,d,h){cube(x,h/2,z,w,h,d,mats.darkbrick,true);for(let yy=2;yy<h-1;yy+=3)for(let xx=-w/2+2;xx<w/2-1;xx+=4){const win=cube(x+xx,yy,z-d/2-.03,1.3,1.1,.08,mats.glass,false);win.material=mats.glass}cube(x,h+.15,z,w+.3,.3,d+.3,mats.brick,false)}
+for(const b of [[-22,-20,15,14,13],[22,-22,16,13,18],[-23,22,13,16,11],[23,22,17,15,14],[-53,-18,16,17,16],[53,-20,16,14,12],[-53,25,15,17,14],[53,25,18,14,19],[-22,-54,15,15,12],[22,-54,17,14,16],[-22,53,17,14,14],[22,54,14,16,18],[-78,-50,16,15,12],[78,50,16,16,15]])building(...b);
+// base safehouse at origin-ish
+const base={x:0,z:0,hp:100,max:100};
+// Safehouse walls with an open front doorway
+cube(0,1.5,-4.8,12,3,.4,mats.wood,true);
+cube(-5.8,1.5,0,.4,3,10,mats.wood,true);
+cube(5.8,1.5,0,.4,3,10,mats.wood,true);
+// dark front door opening represented by doorway gap in front face with side posts and lintel
+cube(-4.7,1.4,5.05,2.6,2.8,.5,mats.wood,true);cube(4.7,1.4,5.05,2.6,2.8,.5,mats.wood,true);cube(0,2.85,5.05,6.8,.35,.5,mats.wood,true);
+cube(0,3.2,0,13,.35,11,mats.darkbrick,false);
+cube(0,4.2,0,1.2,1.5,1.2,mats.glow,false);lampLight.position.set(0,5,0);
+cube(-5.8,1.2,-5.5,.25,2,.25,mats.glow,false);cube(5.8,1.2,-5.5,.25,2,.25,mats.glow,false);
+// crates and supplies
+function addCrate(x,z,kind){const mesh=cube(x,.7,z,1.25,1.25,1.25,mats.crate,false);cube(x,.7,z,.12,1.28,1.3,mats.wood,false);crates.push({x,z,kind,mesh,opened:false,glow:null});const l=new THREE.PointLight(kind==='food'?0x8cff9b:0xffc66b,.55,5);l.position.set(x,1.4,z);scene.add(l);crates[crates.length-1].glow=l}
+[[-15,-9,'wood'],[15,-8,'scrap'],[-13,12,'food'],[16,13,'mixed'],[-36,-3,'mixed'],[36,2,'food'],[-38,-32,'wood'],[38,-35,'scrap'],[-58,2,'mixed'],[58,0,'food'],[-5,37,'mixed'],[7,-38,'food'],[-68,38,'scrap'],[68,-38,'mixed'],[-42,52,'food'],[43,52,'wood'],[-80,0,'mixed'],[80,0,'food']].forEach(a=>addCrate(...a));
+// trees and wrecked cars as obstacles
+for(let i=0;i<35;i++){const x=(Math.sin(i*78.3)*.5+.5)*180-90,z=(Math.cos(i*43.7)*.5+.5)*180-90;if(Math.abs(x)<12&&Math.abs(z)<12)continue;if(Math.abs(x%28)<7||Math.abs(z%28)<5)continue;cube(x,1,z,.7,2,.7,mats.wood,true);const leaves=cube(x,2.8,z,2.7,2.7,2.7,mats.leaf,true)}
+for(const [x,z] of [[-10,-14],[12,17],[-40,9],[43,14],[-60,-20],[62,20]]){cube(x,.65,z,4.5,1.3,2.3,mats.metal,true);cube(x,1.35,z,2.1,.5,1.9,mats.darkbrick,false)}
+// Player: first-person camera
+const player={x:0,y:1.7,z:10,yaw:Math.PI,pitch:0,hp:100,hunger:100,stamina:100,wood:0,scrap:0,food:0,burgers:0,medkits:0,wallBlueprints:0,bearTraps:0,hasGun:false,ammo:0,held:'bat',backpackOpen:false,opened:0,attackCd:0,hitFlash:0,alive:true,weapon:'Wooden bat'};
+camera.position.set(player.x,player.y,player.z);scene.add(camera);
+// Detailed first-person bat: handle, grip tape, metal rings, and chunky barrel.
+const bat=new THREE.Group();
+const batWood=new THREE.MeshStandardMaterial({color:0x98683b,roughness:.8});
+const batDark=new THREE.MeshStandardMaterial({color:0x35251c,roughness:.95});
+const batMetal=new THREE.MeshStandardMaterial({color:0x9ba5aa,metalness:.75,roughness:.35});
+const barrel=new THREE.Mesh(new THREE.CylinderGeometry(.085,.12,.78,8),batWood);barrel.rotation.x=Math.PI/2;barrel.position.z=-.34;bat.add(barrel);
+const handle=new THREE.Mesh(new THREE.CylinderGeometry(.045,.055,.38,8),batDark);handle.rotation.x=Math.PI/2;handle.position.z=.19;bat.add(handle);
+const grip=new THREE.Mesh(new THREE.CylinderGeometry(.058,.058,.23,8),new THREE.MeshStandardMaterial({color:0x171b1e,roughness:1}));grip.rotation.x=Math.PI/2;grip.position.z=.29;bat.add(grip);
+for(const z of [-.68,-.03,.04]){const ring=new THREE.Mesh(new THREE.TorusGeometry(z===-.68?.105:.09,.018,5,10),batMetal);ring.position.z=z;bat.add(ring)}
+const cap=new THREE.Mesh(new THREE.SphereGeometry(.105,8,6),batDark);cap.position.z=-.73;bat.add(cap);
+bat.position.set(.43,-.38,-.72);bat.rotation.set(.2,-.16,-.1);camera.add(bat);
+// Procedural item textures: each held/dropped item gets its own distinct pattern.
+function itemTexture(kind){const c=document.createElement('canvas');c.width=64;c.height=64;const x=c.getContext('2d');const base={medkit:'#e8e8e8',burger:'#b87832',gun:'#303b44',wallBlueprint:'#257db6',bearTrap:'#89949b',wood:'#80532e',scrap:'#6f7c85'}[kind]||'#888';x.fillStyle=base;x.fillRect(0,0,64,64);x.strokeStyle='#1119';x.lineWidth=4;for(let i=-64;i<128;i+=12){x.beginPath();x.moveTo(i,0);x.lineTo(i+64,64);x.stroke()}if(kind==='medkit'){x.fillStyle='#cf2727';x.fillRect(25,9,14,46);x.fillRect(9,25,46,14)}if(kind==='burger'){x.fillStyle='#e8b75d';x.fillRect(8,12,48,16);x.fillStyle='#5c9a43';x.fillRect(8,29,48,5);x.fillStyle='#8a4221';x.fillRect(8,35,48,10);x.fillStyle='#e8b75d';x.fillRect(8,45,48,8)}if(kind==='wallBlueprint'){x.strokeStyle='#d9f2ff';x.lineWidth=2;for(let i=8;i<64;i+=12){x.beginPath();x.moveTo(i,4);x.lineTo(i,60);x.stroke();x.beginPath();x.moveTo(4,i);x.lineTo(60,i);x.stroke()}}if(kind==='gun'){x.fillStyle='#c2cbd0';x.fillRect(9,20,45,13);x.fillRect(30,31,12,21)}if(kind==='bearTrap'){x.strokeStyle='#d7e0e4';x.lineWidth=5;x.beginPath();x.arc(32,32,21,0,Math.PI*2);x.stroke();for(let a=0;a<Math.PI*2;a+=Math.PI/4){x.beginPath();x.moveTo(32+Math.cos(a)*19,32+Math.sin(a)*19);x.lineTo(32+Math.cos(a)*28,32+Math.sin(a)*28);x.stroke()}}const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t}
+const heldModels={};
+function makeHeldModel(kind){const g=new THREE.Group();const textured=new THREE.MeshStandardMaterial({map:itemTexture(kind),roughness:.8});const plain=(color,metalness=0)=>new THREE.MeshStandardMaterial({color,metalness,roughness:.7});function add(geo,mat,x,y,z,rx=0,ry=0,rz=0){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=true;g.add(m)}
+ if(kind==='medkit'){add(new THREE.BoxGeometry(.36,.28,.2),textured,0,0,0);add(new THREE.BoxGeometry(.07,.3,.21),plain(0xd42b2b),0,0,0);add(new THREE.BoxGeometry(.36,.07,.22),plain(0xd42b2b),0,0,0)}
+ if(kind==='burger'){add(new THREE.CylinderGeometry(.17,.17,.09,10),plain(0xd8a14d),0,-.06,0);add(new THREE.CylinderGeometry(.16,.16,.06,10),plain(0x5e9b3c),0,0,0);add(new THREE.CylinderGeometry(.15,.15,.08,10),plain(0x7b4226),0,.055,0);add(new THREE.SphereGeometry(.16,10,6),plain(0xe4b764),0,.105,0,0,0,0);}
+ if(kind==='gun'){add(new THREE.BoxGeometry(.36,.12,.12),textured,0,0,0);add(new THREE.BoxGeometry(.15,.22,.12),plain(0x343b40,.4),.07,-.15,0,.2);add(new THREE.BoxGeometry(.22,.055,.055),plain(0x9aa4ab,.5),.22,.045,0)}
+ if(kind==='wallBlueprint'){add(new THREE.BoxGeometry(.34,.025,.26),textured,0,0,0);add(new THREE.BoxGeometry(.24,.035,.04),plain(0xbfeaff),0,.018,0);add(new THREE.BoxGeometry(.04,.035,.18),plain(0xbfeaff),0,.018,0)}
+ if(kind==='bearTrap'){add(new THREE.TorusGeometry(.15,.035,6,12),textured,0,0,0,Math.PI/2);for(let i=0;i<6;i++){const a=i*Math.PI/3;add(new THREE.ConeGeometry(.025,.09,4),plain(0xd0d7db,.55),Math.cos(a)*.14,.03,Math.sin(a)*.14,0,0,Math.PI/2)}}
+ if(kind==='wood'){add(new THREE.BoxGeometry(.13,.13,.36),textured,0,0,0,.3,0,.2)}if(kind==='scrap'){add(new THREE.BoxGeometry(.3,.07,.2),textured,0,0,0,.1,.2,.15)}
+ g.position.set(.43,-.34,-.72);g.rotation.set(-.1,-.2,0);camera.add(g);return g}
+for(const kind of ['medkit','burger','gun','wallBlueprint','bearTrap','wood','scrap']){heldModels[kind]=makeHeldModel(kind);heldModels[kind].visible=false}
+function refreshHeldModel(){bat.visible=player.held==='bat';for(const [kind,g] of Object.entries(heldModels))g.visible=player.held===kind;document.querySelectorAll('.slot').forEach(b=>b.classList.toggle('active',Number(b.dataset.slot)===slotForHeld(player.held)));}
+function slotForHeld(kind){return ({bat:1,medkit:2,burger:3,gun:4,wallBlueprint:5,bearTrap:6,wood:7,scrap:8})[kind]||9}
+function selectSlot(n){if(n===9){toggleBackpack();return}const kind=({1:'bat',2:'medkit',3:'burger',4:'gun',5:'wallBlueprint',6:'bearTrap',7:'wood',8:'scrap'})[n];if(!kind)return;if(kind==='gun'&&!player.hasGun){toast('Find a gun in a crate first.');return}if(kind==='medkit'&&!player.medkits){toast('No medkits.');return}if(kind==='burger'&&!player.burgers){toast('No burgers.');return}if(kind==='wallBlueprint'&&!player.wallBlueprints){toast('No wall blueprint.');return}if(kind==='bearTrap'&&!player.bearTraps){toast('No bear traps.');return}player.held=kind;refreshHeldModel();toast('Selected '+kind+'.');}
+
+let gameStarted=false,paused=false,gameOver=false,elapsed=0,night=1,phaseTime=0,isDay=true,last=performance.now(),toastUntil=0,attackAnim=0,baseAlert=0;
+function toast(s,ms=2200){$('toast').textContent=s;$('toast').style.display='block';toastUntil=performance.now()+ms}
+function rand(a,b){return a+Math.random()*(b-a)}
+function makeZombie(x,z,forcedType=null){
+ const roll=Math.random();const type=forcedType||(roll<.15?'runner':roll<.29?'brute':roll<.39?'spitter':'shambler');
+ const group=new THREE.Group();
+ const skinMat=new THREE.MeshStandardMaterial({color:type==='spitter'?0x6fa83c:type==='brute'?0x48633e:type==='runner'?0x72965a:0x56854a,roughness:1});
+ const shirtMat=new THREE.MeshStandardMaterial({color:type==='brute'?0x3e3932:type==='runner'?0x394d42:0x2d6b49,roughness:1});
+ const pantsMat=new THREE.MeshStandardMaterial({color:0x263b68,roughness:1});
+ const woundMat=new THREE.MeshStandardMaterial({color:0x4a2220,roughness:1});
+ const eyeMat=new THREE.MeshStandardMaterial({color:type==='spitter'?0x9dff45:0xff3028,emissive:type==='spitter'?0x347d08:0x8f0505,emissiveIntensity:1.2});
+ function part(geo,mat,x,y,z){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;group.add(m);return m}
+ const sc=type==='brute'?1.22:type==='runner'?.88:1;group.scale.setScalar(sc);
+ // Minecraft-style infected: square head, cuboid torso, straight block arms and legs.
+ part(new THREE.BoxGeometry(.78,.82,.48),shirtMat,0,1.25,0);
+ part(new THREE.BoxGeometry(.52,.52,.52),skinMat,0,1.98,-.015);
+ part(new THREE.BoxGeometry(.55,.13,.07),woundMat,0,1.78,-.285);
+ for(const side of [-1,1]){part(new THREE.BoxGeometry(.12,.12,.045),eyeMat,side*.14,2.05,-.29);part(new THREE.BoxGeometry(.12,.06,.07),shirtMat,side*.14,2.15,-.28)}
+ for(const side of [-1,1]){part(new THREE.BoxGeometry(.27,.76,.3),shirtMat,side*.53,1.22,0);part(new THREE.BoxGeometry(.28,.27,.3),skinMat,side*.53,.72,-.015);part(new THREE.BoxGeometry(.22,.72,.34),pantsMat,side*.2,.48,0);part(new THREE.BoxGeometry(.25,.18,.42),new THREE.MeshStandardMaterial({color:0x171a1d}),side*.2,.09,-.045)}
+ part(new THREE.BoxGeometry(.16,.22,.08),woundMat,-.2,1.35,-.255);
+ if(type==='brute'){part(new THREE.BoxGeometry(.9,.22,.55),shirtMat,0,1.48,.02);part(new THREE.BoxGeometry(.45,.16,.12),new THREE.MeshStandardMaterial({color:0xb8b39b}),0,1.36,-.29)}
+ if(type==='spitter'){part(new THREE.BoxGeometry(.24,.2,.16),new THREE.MeshStandardMaterial({color:0x85d642,emissive:0x2a6b09}),0,1.72,-.29)}
+ group.position.set(x,0,z);scene.add(group);
+ const zed={group,type,hp:type==='brute'?7:type==='runner'?2:type==='spitter'?3:3,speed:type==='brute'?.82:type==='runner'?1.42:type==='spitter'?1.08:1.22,damage:type==='brute'?18:type==='runner'?7:9,attack:rand(.1,1),specialCd:rand(1.5,4),stun:0,roam:rand(0,6),roamTimer:rand(.5,3),roamAngle:rand(0,Math.PI*2),dead:false,phase:rand(0,6)};
+ zombies.push(zed);return zed
+}
+// The city is clear during daytime. A full wave of 30 zombies appears when night begins.
+function distanceXZ(a,b){return Math.hypot(a.x-b.x,a.z-b.z)}
+function blocked(x,z,r=.45){for(const o of obstacles){if(Math.abs(x-o.x)<o.hx+r&&Math.abs(z-o.z)<o.hz+r)return true}for(const b of barricades){if(Math.abs(x-b.x)<.7+r&&Math.abs(z-b.z)<.7+r)return true}return false}
+function movePlayer(dx,dz){const nx=player.x+dx,nz=player.z+dz;if(!blocked(nx,player.z,.35))player.x=nx;if(!blocked(player.x,nz,.35))player.z=nz}
+function nearestCrate(){let best=null,bd=3.1;for(const c of crates){if(c.opened)continue;let d=distanceXZ(player,c);if(d<bd){bd=d;best=c}}return best}
+function spawnDrop(kind,x,z){const geo=kind==='burger'?new THREE.CylinderGeometry(.25,.25,.16,8):kind==='bearTrap'?new THREE.TorusGeometry(.28,.07,6,10):kind==='gun'?new THREE.BoxGeometry(.42,.14,.18):kind==='medkit'?new THREE.BoxGeometry(.34,.25,.25):kind==='wallBlueprint'?new THREE.BoxGeometry(.34,.045,.28):kind==='wood'?new THREE.BoxGeometry(.18,.18,.48):new THREE.BoxGeometry(.32,.1,.25);const mat=new THREE.MeshStandardMaterial({map:itemTexture(kind),color:0xffffff,emissive:kind==='wallBlueprint'?0x123b5a:0x000000,metalness:kind==='gun'||kind==='bearTrap'||kind==='scrap'?.45:0,roughness:.8});const mesh=new THREE.Mesh(geo,mat);mesh.position.set(x,.35,z);mesh.castShadow=true;scene.add(mesh);droppedItems.push({kind,x,z,mesh})}
+function giveItem(kind){if(kind==='gun'){player.hasGun=true;player.ammo=Math.max(player.ammo,12);toast('🔫 RARE GUN! Press G to equip it.');return}if(kind==='wallBlueprint'){player.wallBlueprints++;toast('📘 Wall blueprint stored!');return}if(kind==='bearTrap'){player.bearTraps++;toast('🪤 Bear trap stored! Press T to place it.');return}if(kind==='medkit'){player.medkits++;toast('🩹 Medkit stored! Press H to heal.');return}if(kind==='burger'){player.burgers++;toast('🍔 Burger stored! Press A to hold it, then X to eat.');return}if(kind==='wood'){player.wood++;return}if(kind==='scrap'){player.scrap++;return}}
+function openCrate(){if(!gameStarted||paused||gameOver)return;const c=nearestCrate();if(!c){toast('No crate close enough.');return}c.opened=true;c.mesh.visible=false;if(c.glow)c.glow.visible=false;player.opened++;let drops=[];const roll=(chance,kind)=>{if(Math.random()*100<chance){spawnDrop(kind,c.x+rand(-.65,.65),c.z+rand(-.65,.65));drops.push(kind)}};
+ // Each percentage is an independent chance, so a crate may contain more than one item.
+ roll(1,'gun');roll(20,'wallBlueprint');roll(30,'bearTrap');roll(50,'medkit');roll(90,'burger');
+ toast('📦 Crate opened! Drops: '+(drops.length?drops.map(x=>({wallBlueprint:'wall blueprint',bearTrap:'bear trap',medkit:'medkit',burger:'burger',gun:'gun'}[x]||x).join(', ')):'nothing this time'));
+}
+function pickupNearby(){if(!gameStarted||paused||gameOver)return;let best=-1,bd=3;for(let i=0;i<droppedItems.length;i++){const it=droppedItems[i],d=distanceXZ(player,it);if(d<bd){best=i;bd=d}}if(best<0){toast('No dropped item nearby. Open a crate with R first.');return}const it=droppedItems.splice(best,1)[0];scene.remove(it.mesh);it.mesh.geometry.dispose();if(it.mesh.material.map)it.mesh.material.map.dispose();it.mesh.material.dispose();giveItem(it.kind);}
+function interact(){pickupNearby()}
+function dropHeld(){if(!gameStarted||paused||gameOver)return;const kind=player.held;if(kind==='wood'||kind==='scrap'){if(player[kind]<1){toast('Nothing to throw.');return}player[kind]--;spawnDrop(kind,player.x-Math.sin(player.yaw)*1.4,player.z-Math.cos(player.yaw)*1.4);player.held='bat';refreshHeldModel();toast('Dropped '+kind+'.');return}if(kind==='bat'){toast('You cannot drop your only bat.');return}if(kind==='gun'){if(!player.hasGun){toast('You do not have a gun.');return}player.hasGun=false;player.ammo=0;spawnDrop('gun',player.x,player.z);player.held='bat';refreshHeldModel();toast('Gun dropped.');return}if(kind==='burger'&&player.burgers>0)player.burgers--;else if(kind==='medkit'&&player.medkits>0)player.medkits--;else if(kind==='bearTrap'&&player.bearTraps>0)player.bearTraps--;else if(kind==='wallBlueprint'&&player.wallBlueprints>0)player.wallBlueprints--;else{toast('Nothing selected to drop.');return}spawnDrop(kind,player.x,player.z);player.held='bat';refreshHeldModel();toast('Dropped '+kind+'.')}
+function eatBurger(){if(player.burgers<1){toast('No burger in your backpack.');return}player.burgers--;player.hunger=Math.min(100,player.hunger+10);player.held='bat';refreshHeldModel();toast('🍔 Burger eaten: +10 hunger.')}
+function useMedkit(){if(player.medkits<1){toast('No medkit in your backpack.');return}if(player.hp>=100){toast('Health is already full.');return}player.medkits--;player.hp=Math.min(100,player.hp+35);player.held='bat';refreshHeldModel();toast('🩹 Medkit used: +35 health.')}
+function placeTrap(){if(player.bearTraps<1){toast('No bear traps. Find one in a crate.');return}const dir=new THREE.Vector3(-Math.sin(player.yaw),0,-Math.cos(player.yaw)),x=player.x+dir.x*2,z=player.z+dir.z*2;if(blocked(x,z,.4)){toast('There is no room for a trap.');return}const mesh=new THREE.Mesh(new THREE.TorusGeometry(.42,.09,6,12),new THREE.MeshStandardMaterial({color:0x9da5ab,metalness:.7,roughness:.45}));mesh.rotation.x=Math.PI/2;mesh.position.set(x,.12,z);scene.add(mesh);traps.push({x,z,mesh,life:90});player.bearTraps--;if(player.bearTraps===0&&player.held==='bearTrap')player.held='bat';refreshHeldModel();toast('🪤 Bear trap placed!')}
+function updateBackpackContents(){if(player.backpackOpen){$('backpackText').innerHTML='Wood: '+player.wood+'<br>Scrap: '+player.scrap+'<br>Burgers: '+player.burgers+'<br>Medkits: '+player.medkits+'<br>Wall blueprints: '+player.wallBlueprints+'<br>Bear traps: '+player.bearTraps+'<br>Gun: '+(player.hasGun?'Yes ('+player.ammo+' shots)':'No')+'<br><small>Press 2 to close. E stores nearby drops; F drops held item.</small>'}}
+function toggleBackpack(){player.backpackOpen=!player.backpackOpen;$('backpack').style.display=player.backpackOpen?'block':'none';updateBackpackContents()}
+
+function build(){if(!gameStarted||paused||gameOver)return;if(player.held==='bearTrap'){placeTrap();return}if(player.held==='wallBlueprint'&&player.wallBlueprints>0){const dir=new THREE.Vector3(-Math.sin(player.yaw),0,-Math.cos(player.yaw)),x=player.x+dir.x*2.3,z=player.z+dir.z*2.3;if(blocked(x,z,.8)){toast('No room to build there.');return}player.wallBlueprints--;const mesh=cube(x,1,z,2.4,2,.35,mats.concrete,false);barricades.push({x,z,hp:18,mesh});toast('🧱 Reinforced blueprint wall built!');refreshHeldModel();return}if(player.wood<3){toast('Need 3 wood to build a barricade. Select blueprint for a strong wall.');return}const dir=new THREE.Vector3(-Math.sin(player.yaw),0,-Math.cos(player.yaw));const x=player.x+dir.x*2.3,z=player.z+dir.z*2.3;if(blocked(x,z,.8)){toast('No room to build there.');return}player.wood-=3;const mesh=cube(x,1,z,1.35,2,1.35,mats.wood,false);barricades.push({x,z,hp:5,mesh});toast('Barricade built. Zombies can break it.')}
+
+function shatterZombie(z){
+ const group=z.group;group.updateMatrixWorld(true);
+ for(const child of [...group.children]){
+  if(!child.isMesh)continue;
+  const piece=new THREE.Mesh(child.geometry.clone(),child.material.clone());
+  child.getWorldPosition(piece.position);child.getWorldQuaternion(piece.quaternion);child.getWorldScale(piece.scale);
+  piece.material.transparent=true;piece.castShadow=true;scene.add(piece);
+  const vel=new THREE.Vector3(rand(-4,4),rand(2.4,6.5),rand(-4,4));
+  shards.push({mesh:piece,vel,spin:new THREE.Vector3(rand(-9,9),rand(-9,9),rand(-9,9)),life:1.45,maxLife:1.45});
+ }
+ scene.remove(group);z.group.visible=false;
+}
+function attack(){if(!gameStarted||paused||gameOver||player.attackCd>0)return;if(player.held==='gun'&&player.hasGun){player.attackCd=.28;if(player.ammo<=0){toast('Gun empty!');return}player.ammo--;let target=null,best=28;const forward={x:-Math.sin(player.yaw),z:-Math.cos(player.yaw)};for(const z of zombies){if(z.dead)continue;const dx=z.group.position.x-player.x,dz=z.group.position.z-player.z,d=Math.hypot(dx,dz),dot=(dx*forward.x+dz*forward.z)/(d||1);if(d<best&&dot>.92){best=d;target=z}}if(target){target.hp-=4;if(target.hp<=0){target.dead=true;shatterZombie(target);player.scrap++;toast('🔫 Zombie down!')}else toast('🔫 Hit! Ammo: '+player.ammo,700)}else toast('🔫 Shot fired. Ammo: '+player.ammo,500);return}player.attackCd=.55;attackAnim=.22;bat.rotation.set(-.85,-.35,-.7);let target=null,best=3.05;const forward={x:-Math.sin(player.yaw),z:-Math.cos(player.yaw)};for(const z of zombies){if(z.dead)continue;const dx=z.group.position.x-player.x,dz=z.group.position.z-player.z,d=Math.hypot(dx,dz);if(d<best){const dot=(dx*forward.x+dz*forward.z)/(d||1);if(dot>.1){best=d;target=z}}}if(target){target.hp--;target.stun=.28;const v=new THREE.Vector3(target.group.position.x-player.x,0,target.group.position.z-player.z).normalize();target.group.position.add(v.multiplyScalar(.8));if(target.hp<=0){target.dead=true;shatterZombie(target);player.scrap+=Math.random()<.45?1:0;toast('💥 Zombie shattered!')}else toast('Hit! Keep your distance.',700)}else toast('Your bat swings through the cold air.',500)}
+function damage(n){player.hp=Math.max(0,player.hp-n);player.hitFlash=.18;$('damage').style.opacity='.85';if(player.hp<=0){gameOver=true;showEnd(false)}}
+function showEnd(win){paused=true;$('overlay').style.display='flex';$('overlay').innerHTML='<div class="card"><h1>'+ (win?'YOU SURVIVED':'YOU WERE OVERRUN')+'</h1><p class="sub">You lasted '+formatTime(elapsed)+'. Loot crates opened: '+player.opened+'. Zombies defeated: '+(zombies.filter(z=>z.dead).length)+'.</p><p class="sub">'+(win?'The city is quiet—for now.':'The safehouse lights went out. The city swallowed the last survivor.')+'</p><button id="restart">TRY AGAIN</button></div>';$('restart').onclick=()=>location.reload()}
+function formatTime(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0')}
+function updateHUD(){ $('healthText').textContent=Math.ceil(player.hp)+' / 100';$('healthFill').style.width=player.hp+'%';$('foodText').textContent=Math.ceil(player.hunger)+'%';$('foodFill').style.width=player.hunger+'%';$('staminaText').textContent=Math.ceil(player.stamina)+'%';$('staminaFill').style.width=player.stamina+'%';$('invText').textContent='Wood '+player.wood+' · Scrap '+player.scrap+' · Burgers '+player.burgers;$('lootText').textContent='Loot crates opened: '+player.opened;$('heldText').textContent='Held: '+({bat:'Bat',gun:'Gun',burger:'Burger',medkit:'Medkit',bearTrap:'Bear Trap',wallBlueprint:'Wall Blueprint'}[player.held]||player.held);$('timeText').textContent=(isDay?'DAY':'NIGHT')+' '+night+' · '+formatTime(phaseTime);const nearby=zombies.filter(z=>!z.dead&&distanceXZ(player,{x:z.group.position.x,z:z.group.position.z})<22);$('zombieText').textContent='Zombies nearby: '+nearby.length+' · '+nearby.filter(z=>z.type!=='shambler').length+' special';$('baseText').textContent='Base integrity: '+Math.ceil(base.hp)+'%';if(player.backpackOpen)updateBackpackContents();$('count2').textContent=player.medkits;$('count3').textContent=player.burgers;$('count4').textContent=player.hasGun?player.ammo:0;$('count5').textContent=player.wallBlueprints;$('count6').textContent=player.bearTraps;$('count7').textContent=player.wood;$('count8').textContent=player.scrap;$('weapon').textContent='Weapon: '+(player.held==='gun'?'Gun ('+player.ammo+')':player.held==='burger'?'Burger':player.held==='medkit'?'Medkit':player.held==='bearTrap'?'Bear Trap':player.held==='wallBlueprint'?'Wall Blueprint':'Wooden bat');}
+function look(e){if(!gameStarted||paused)return;if(document.pointerLockElement===renderer.domElement){player.yaw-=e.movementX*.0022;player.pitch-=e.movementY*.0022}else if(mouseDown){player.yaw-=e.movementX*.006;player.pitch-=e.movementY*.006}player.pitch=Math.max(-1.25,Math.min(1.25,player.pitch))}
+let mouseDown=false;renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());renderer.domElement.addEventListener('mousedown',e=>{if(!gameStarted||paused||gameOver)return;e.preventDefault();if(document.pointerLockElement!==renderer.domElement)renderer.domElement.requestPointerLock?.();if(e.button===2){build();return}if(e.button===0)attack()});document.addEventListener('mousemove',look);renderer.domElement.addEventListener('pointerdown',()=>{mouseDown=true});addEventListener('pointerup',()=>mouseDown=false);document.querySelectorAll('.slot').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();selectSlot(Number(b.dataset.slot))}));
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['w','a','s','d','z','q',' ','shift'].includes(k))e.preventDefault();if(keys[k])return;keys[k]=true;if(k==='e')pickupNearby();if(k==='r')openCrate();if(k==='f')dropHeld();if('123456789'.includes(k))selectSlot(Number(k));if(k==='b')build();if(k==='x'){if(player.held==='burger')eatBurger();else if(player.held==='medkit')useMedkit();else toast('Select a burger or medkit first.')}if(k==='escape'&&gameStarted&&!gameOver){paused=!paused;toast(paused?'Paused. Press Esc to continue.':'Keep moving.');if(paused&&document.pointerLockElement)document.exitPointerLock()}});
+addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+let keys={};
+$('startBtn').onclick=()=>{gameStarted=true;$('overlay').style.display='none';refreshHeldModel();renderer.domElement.requestPointerLock?.();toast('Daytime is quiet. 30 zombies arrive at nightfall.');last=performance.now()};
+$('howBtn').onclick=()=>{$('tipText').style.display=$('tipText').style.display==='none'?'block':'none'};
+function tick(now){requestAnimationFrame(tick);const dt=Math.min((now-last)/1000,.04);last=now;if(gameStarted&&!paused&&!gameOver){elapsed+=dt;const cycle=elapsed%240;const wasDay=isDay;isDay=cycle<60;phaseTime=isDay?cycle:cycle-60;night=1+Math.floor(elapsed/240);moon.intensity=isDay?.65:1.2;scene.background.set(isDay?0x34495a:0x080e16);if(wasDay&&!isDay){for(const z of zombies)scene.remove(z.group);zombies=[];for(let i=0;i<30;i++){const a=rand(0,Math.PI*2),r=rand(35,62);makeZombie(player.x+Math.cos(a)*r,player.z+Math.sin(a)*r)}}else if(!wasDay&&isDay){for(const z of zombies)scene.remove(z.group);zombies=[];for(const b of spitballs){scene.remove(b.mesh)}spitballs=[];toast('☀️ Daybreak! The zombies have disappeared.',2200)}player.attackCd=Math.max(0,player.attackCd-dt);if(attackAnim>0){attackAnim-=dt;const t=1-attackAnim/.22;bat.rotation.set(-.85+1.05*t,-.35+.19*t,-.7+.8*t)}else bat.rotation.set(.2,-.16,-.1);
+ const forward= new THREE.Vector3(-Math.sin(player.yaw),0,-Math.cos(player.yaw)),right=new THREE.Vector3(Math.cos(player.yaw),0,-Math.sin(player.yaw));let mx=0,mz=0;if(keys.w||keys.z) {mx+=forward.x;mz+=forward.z}if(keys.s){mx-=forward.x;mz-=forward.z}if((keys.a&&!player.burgers)||keys.q){mx-=right.x;mz-=right.z}if(keys.d){mx+=right.x;mz+=right.z}const moving=Math.hypot(mx,mz)>0;let running=keys.shift&&player.stamina>1&&moving;const speed=running?6.5:3.7;if(moving){const n=Math.hypot(mx,mz);movePlayer(mx/n*speed*dt, mz/n*speed*dt);if(running)player.stamina=Math.max(0,player.stamina-24*dt)}if(!running)player.stamina=Math.min(100,player.stamina+13*dt);
+ player.hunger=Math.max(0,player.hunger-.22*dt);if(player.hunger<=0&&Math.random()<dt*.9)damage(1);
+ // Zombies always roam. Within 34 metres they spot the survivor, turn to face them, and pursue.
+ for(const z of zombies){if(z.dead)continue;const pos=z.group.position,dx=player.x-pos.x,dz=player.z-pos.z,d=Math.hypot(dx,dz);z.attack=Math.max(0,z.attack-dt);z.stun=Math.max(0,z.stun-dt);
+  const aggroRadius=38,sp=z.speed*(1+Math.min(.35,(night-1)*.06));z.phase+=dt*5;z.group.position.y=Math.abs(Math.sin(z.phase))*(z.type==='runner'?.035:.012);
+  if(z.stun<=0&&d<aggroRadius){
+   // All infected turn toward the survivor. Runners get short bursts; spitters keep some distance.
+   z.group.rotation.y=Math.atan2(-dx,-dz);z.specialCd-=dt;
+   if(z.type==='spitter'&&d>5&&d<15&&z.specialCd<=0){const orb=new THREE.Mesh(new THREE.SphereGeometry(.19,8,7),new THREE.MeshStandardMaterial({color:0x9dff3c,emissive:0x4eaa08,emissiveIntensity:1.5}));orb.position.set(pos.x,1.55,pos.z);scene.add(orb);const v=new THREE.Vector3(dx,0,dz).normalize().multiplyScalar(6.3);spitballs.push({mesh:orb,vel:v,life:2.5});z.specialCd=2.7;toast('☣ SPITTER! Dodge the toxic glob!',900)}
+   if(z.type==='spitter'&&d<5){const nx=-dx/(d||1),nz=-dz/(d||1);let tx=pos.x+nx*sp*dt,tz=pos.z+nz*sp*dt;if(!blocked(tx,tz,.35)){pos.x=tx;pos.z=tz}}
+   else if(z.type==='spitter'&&d<15){/* ranged infected hold position to spit */}
+   else if(d>1.35){let burst=1;if(z.type==='runner'&&z.specialCd<=0){burst=1.9;z.specialCd=rand(2.4,4.2)}const nx=dx/(d||1),nz=dz/(d||1);let tx=pos.x+nx*sp*burst*dt,tz=pos.z+nz*sp*burst*dt;if(!blocked(tx,tz,.35)){pos.x=tx;pos.z=tz}else{
+    let b=barricades.find(b=>Math.hypot(b.x-pos.x,b.z-pos.z)<2.2);if(b){b.hp-=dt*1.8;if(b.hp<=0){scene.remove(b.mesh);barricades=barricades.filter(q=>q!==b);toast('A barricade was destroyed!')}}else if(distanceXZ({x:pos.x,z:pos.z},base)<9){base.hp=Math.max(0,base.hp-dt*1.1);if(base.hp<=0&&baseAlert<1){toast('Your safehouse is falling apart!');baseAlert=1;}}}
+   }else if(z.attack<=0){z.attack=z.type==='runner'?.8:1.05;damage(z.damage+Math.min(5,night-1));if(z.type==='brute')toast('💥 BRUTE SMASH!');}
+  }else if(z.stun<=0){
+   z.roamTimer-=dt;if(z.roamTimer<=0){z.roamTimer=rand(1.2,3.8);z.roamAngle+=rand(-1.9,1.9)}
+   const rx=-Math.sin(z.roamAngle),rz=-Math.cos(z.roamAngle),walk=sp*.43;let tx=pos.x+rx*walk*dt,tz=pos.z+rz*walk*dt;
+   if(blocked(tx,tz,.35)){z.roamAngle+=rand(1.0,2.6);tx=pos.x-Math.sin(z.roamAngle)*walk*dt;tz=pos.z-Math.cos(z.roamAngle)*walk*dt}
+   if(!blocked(tx,tz,.35)){pos.x=tx;pos.z=tz;z.group.rotation.y=Math.atan2(-Math.sin(z.roamAngle),-Math.cos(z.roamAngle))}
+  }
+  // Zombies that reach base pressure it even if player is away
+  if(distanceXZ({x:pos.x,z:pos.z},base)<7&&Math.random()<dt*.1)base.hp=Math.max(0,base.hp-.3);
+ }
+ for(let ti=traps.length-1;ti>=0;ti--){const tr=traps[ti];tr.life-=dt;const victim=zombies.find(z=>!z.dead&&distanceXZ({x:tr.x,z:tr.z},{x:z.group.position.x,z:z.group.position.z})<.8);if(victim){victim.hp-=4;victim.stun=2;tr.life=0;toast('🪤 Bear trap caught a zombie!');if(victim.hp<=0){victim.dead=true;shatterZombie(victim)}}if(tr.life<=0){scene.remove(tr.mesh);tr.mesh.geometry.dispose();tr.mesh.material.dispose();traps.splice(ti,1)}}
+ if(base.hp<=0){$('baseText').textContent='BASE BREACHED!';}
+ // Exactly 30 zombies spawn at nightfall; the wave is removed at daybreak.
+ camera.position.set(player.x,player.y,player.z);camera.rotation.order='YXZ';camera.rotation.y=player.yaw;camera.rotation.x=player.pitch;
+ // light flicker and atmospheric shifts
+ lampLight.intensity=2+Math.sin(now*.012)*.18+Math.random()*.08;scene.fog.density=(isDay?.006:.010)+Math.sin(now*.0003)*.0015;
+ if(player.hitFlash>0){player.hitFlash-=dt;if(player.hitFlash<=0)$('damage').style.opacity='0'}
+ const c=nearestCrate();$('prompt').style.display=c?'block':'none';$('prompt').textContent=c?'Press R to open supply crate':'';
+ if(now>toastUntil)$('toast').style.display='none';updateHUD();
+ }
+ // Toxic spit projectiles fly toward the survivor and damage on impact.
+ for(let i=spitballs.length-1;i>=0;i--){const b=spitballs[i];b.life-=dt;b.mesh.position.addScaledVector(b.vel,dt);b.mesh.position.y=1.35+Math.sin((2.5-b.life)*5)*.2;if(Math.hypot(b.mesh.position.x-player.x,b.mesh.position.z-player.z)<.75){damage(12);toast('☣ Toxic spit hit you!');scene.remove(b.mesh);b.mesh.geometry.dispose();b.mesh.material.dispose();spitballs.splice(i,1);continue}if(b.life<=0||b.mesh.position.y<.1){scene.remove(b.mesh);b.mesh.geometry.dispose();b.mesh.material.dispose();spitballs.splice(i,1)}}
+ // Flying zombie chunks tumble, fall, and fade after a kill.
+ for(let i=shards.length-1;i>=0;i--){const p=shards[i];p.life-=dt;p.vel.y-=9.8*dt;p.mesh.position.addScaledVector(p.vel,dt);p.mesh.rotation.x+=p.spin.x*dt;p.mesh.rotation.y+=p.spin.y*dt;p.mesh.rotation.z+=p.spin.z*dt;if(p.mesh.position.y<.08){p.mesh.position.y=.08;p.vel.y=Math.abs(p.vel.y)*.22;p.vel.x*=.72;p.vel.z*=.72}p.mesh.material.opacity=Math.max(0,p.life/p.maxLife);if(p.life<=0){scene.remove(p.mesh);p.mesh.geometry.dispose();if(Array.isArray(p.mesh.material))p.mesh.material.forEach(m=>m.dispose());else p.mesh.material.dispose();shards.splice(i,1)}}
+ renderer.render(scene,camera)}
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+requestAnimationFrame(tick);
+})();
+</script></body></html>
