@@ -1,0 +1,410 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNITY DAY - MOROCCO NEWS</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #d6d0c3;
+    color: #171717;
+    font-family: Georgia, "Times New Roman", serif;
+}
+
+.newspaper {
+    max-width: 1100px;
+    margin: 25px auto;
+    padding: 30px;
+    background: #fffdf5;
+    box-shadow: 0 5px 25px #555;
+}
+
+.topline {
+    border-top: 5px solid #151515;
+    border-bottom: 2px solid #151515;
+    padding: 9px 0;
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: bold;
+    flex-wrap: wrap;
+}
+
+.masthead {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.masthead h1 {
+    font-size: clamp(38px, 8vw, 75px);
+    margin: 0;
+    letter-spacing: -3px;
+    font-weight: 900;
+}
+
+.masthead p {
+    margin: 5px;
+    font-size: 15px;
+    letter-spacing: 3px;
+}
+
+.redline {
+    background: #b51e2b;
+    color: white;
+    text-align: center;
+    padding: 9px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.headline {
+    text-align: center;
+    border-bottom: 3px solid black;
+    padding: 25px 0;
+}
+
+.headline h2 {
+    font-size: clamp(32px, 6vw, 62px);
+    margin: 0;
+    line-height: 1.05;
+}
+
+.headline h3 {
+    color: #a51c28;
+    font-size: 21px;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    font-size: 19px;
+    color: #444;
+    max-width: 800px;
+    margin: 15px auto 0;
+}
+
+.byline {
+    font-size: 13px;
+    margin-top: 18px;
+    color: #555;
+}
+
+.hero {
+    width: 100%;
+    max-height: 430px;
+    object-fit: cover;
+    margin-top: 20px;
+    border: 1px solid #aaa;
+}
+
+.caption {
+    font-size: 12px;
+    color: #555;
+    text-align: center;
+    margin-top: 5px;
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-top: 25px;
+}
+
+article {
+    margin-bottom: 25px;
+}
+
+article h2 {
+    font-size: 25px;
+    border-bottom: 2px solid #b51e2b;
+    padding-bottom: 7px;
+}
+
+article h3 {
+    font-size: 19px;
+}
+
+article p {
+    font-size: 17px;
+    line-height: 1.75;
+    text-align: justify;
+}
+
+article img {
+    width: 100%;
+    max-height: 280px;
+    object-fit: cover;
+    border: 1px solid #aaa;
+}
+
+.full {
+    grid-column: 1 / -1;
+}
+
+.facts {
+    background: #f1eee5;
+    padding: 20px;
+    border: 1px solid #aaa;
+    margin: 20px 0;
+}
+
+.facts h2 {
+    color: #a51c28;
+}
+
+.facts p {
+    margin: 8px 0;
+    font-size: 16px;
+}
+
+.quote {
+    font-size: 25px;
+    text-align: center;
+    font-style: italic;
+    padding: 25px;
+    border-top: 2px solid;
+    border-bottom: 2px solid;
+    margin: 25px 0;
+}
+
+.footer {
+    margin-top: 35px;
+    padding-top: 15px;
+    border-top: 5px double black;
+    text-align: center;
+    font-size: 13px;
+}
+
+@media(max-width:700px) {
+    .newspaper {
+        margin: 0;
+        padding: 15px;
+    }
+
+    .columns {
+        grid-template-columns: 1fr;
+    }
+
+    .full {
+        grid-column: auto;
+    }
+
+    .topline {
+        gap: 8px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="newspaper">
+
+<div class="topline">
+    <span>🇲🇦 MOROCCO NEWS</span>
+    <span>HISTORY • CULTURE • NATIONAL NEWS</span>
+    <span>SPECIAL EDITION</span>
+</div>
+
+<header class="masthead">
+    <h1>THE MOROCCO TIMES</h1>
+    <p>THE VOICE OF MOROCCAN HISTORY</p>
+</header>
+
+<div class="redline">
+    SPECIAL HISTORICAL EDITION — UNITY DAY
+</div>
+
+<section class="headline">
+    <h3>🇲🇦 MOROCCO • NATIONAL NEWS</h3>
+    <h2>UNITY DAY:<br>A NEW CHAPTER IN MOROCCAN HISTORY</h2>
+    <p class="subtitle">
+        Understanding October 31, the national holiday known as
+        Aid Al Wahda, and its importance to Morocco.
+    </p>
+    <div class="byline">
+        SPECIAL REPORT • OCTOBER 31 • MOROCCO
+    </div>
+</section>
+
+<img class="hero"
+src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4_HITpHbOIIDs4g1GrhaCjaJ7QtFvscEZ50UTim2RZQ&s=10"
+alt="Morocco Unity Day">
+
+<p class="caption">Morocco — A special edition celebrating national unity.</p>
+
+<div class="columns">
+
+<article>
+    <h2>🇲🇦 What Is Unity Day?</h2>
+    <p>
+    Unity Day is a Moroccan national holiday known in Arabic
+    as Aid Al Wahda (عيد الوحدة). It is celebrated every year
+    on October 31. The holiday celebrates Morocco's national
+    unity, identity and territorial integrity, particularly
+    in connection with the Western Sahara issue.
+    </p>
+</article>
+
+<article>
+    <h2>🇲🇦 Who Created It?</h2>
+    <h3>King Mohammed VI</h3>
+    <p>
+    King Mohammed VI established Unity Day and gave it its
+    official name, Aid Al Wahda. The Royal Cabinet announced
+    the decision on November 4, 2025.
+    </p>
+</article>
+
+<article>
+    <h2>🇲🇦 Why Was It Made?</h2>
+    <p>
+    Morocco created Unity Day to celebrate national unity
+    and mark what the country considers an important
+    development in the Western Sahara issue. It also
+    represents Moroccan identity, history and territorial
+    integrity.
+    </p>
+</article>
+
+<article>
+    <h2>📅 When Was It Made?</h2>
+    <p>
+    October 31 is the date chosen for the annual celebration.
+    The first celebration took place in 2025, while the
+    official announcement establishing the holiday was
+    made on November 4, 2025.
+    </p>
+    <p><b>Next celebration: October 31, 2026.</b></p>
+</article>
+
+<article class="full">
+    <h2>📍 Where Was It Established?</h2>
+    <p>
+    Unity Day was officially established through an
+    announcement by the Royal Cabinet in Rabat, the capital
+    city of Morocco, on November 4, 2025, under the authority
+    of King Mohammed VI. Rabat is an important political
+    centre of Morocco and is home to the Royal Palace and
+    central government institutions.
+    </p>
+</article>
+
+<article class="full">
+    <h2>🌍 Why Was October 31 Chosen?</h2>
+    <p>
+    October 31, 2025, was an important date because the
+    United Nations Security Council adopted Resolution 2797
+    concerning Western Sahara. The resolution supported
+    negotiations based on Morocco's autonomy proposal as
+    a framework for reaching a political solution.
+    King Mohammed VI also delivered an important speech
+    to the Moroccan people on that day.
+    </p>
+</article>
+
+<article>
+    <h2>📖 The Western Sahara Issue</h2>
+    <p>
+    Western Sahara is a territory in northwestern Africa
+    whose political status has been disputed for decades.
+    Morocco considers it part of its territory, while the
+    Polisario Front seeks independence. The United Nations
+    continues to work towards a political solution.
+    </p>
+</article>
+
+<article>
+    <h2>🚶 The Green March</h2>
+    <p>
+    The Green March took place on November 6, 1975.
+    It involved a large mobilisation of Moroccan civilians
+    towards Western Sahara and remains an important event
+    in Morocco's modern history.
+    </p>
+</article>
+
+<article class="full">
+    <h2>📰 A Longer Look at Unity Day</h2>
+    <p>
+    Morocco's Unity Day, known in Arabic as Aid Al Wahda
+    (عيد الوحدة), is an important national holiday celebrated
+    every year on October 31 in the Kingdom of Morocco.
+    It was established by King Mohammed VI in 2025 and
+    officially announced on November 4, 2025, through a
+    statement from the Royal Cabinet in Rabat, Morocco.
+    </p>
+
+    <p>
+    The date October 31 was chosen because, on that day
+    in 2025, the United Nations Security Council adopted
+    Resolution 2797 concerning Western Sahara, supporting
+    negotiations based on Morocco's autonomy proposal as
+    a framework for reaching a political solution.
+    King Mohammed VI also delivered an important speech
+    to the Moroccan people on that date, describing the
+    developments as a historic moment for the country.
+    </p>
+
+    <p>
+    Unity Day was created to celebrate Morocco's national
+    unity, territorial integrity, history, culture and
+    identity, and to recognise the importance of bringing
+    Moroccan people together regardless of their region
+    or background. It is also an opportunity for younger
+    generations to learn about Morocco's history, remember
+    important historical events such as the Green March
+    of November 6, 1975, and the country's independence
+    in 1956, and understand the importance of peace,
+    cooperation, stability and development.
+    </p>
+
+    <p>
+    The holiday represents Morocco's official position
+    concerning Western Sahara, although the territory's
+    international political status remains disputed.
+    Every year on October 31, Moroccans can use this
+    occasion to remember their shared history, celebrate
+    their national identity, learn about their country's
+    past and look forward to its future.
+    </p>
+</article>
+
+</div>
+
+<div class="facts">
+    <h2>FAST FACTS — UNITY DAY</h2>
+    <p><b>Official name:</b> Aid Al Wahda (عيد الوحدة)</p>
+    <p><b>Country:</b> Kingdom of Morocco 🇲🇦</p>
+    <p><b>Date:</b> October 31</p>
+    <p><b>Established by:</b> King Mohammed VI</p>
+    <p><b>Year established:</b> 2025</p>
+    <p><b>Announcement:</b> November 4, 2025</p>
+    <p><b>Location of announcement:</b> Rabat, Morocco</p>
+    <p><b>Main theme:</b> National unity</p>
+</div>
+
+<div class="quote">
+    "Unity, history, identity and the future of Morocco."
+    <br>
+    <b>🇲🇦 THE MOROCCO TIMES</b>
+</div>
+
+<div class="footer">
+    <h2>THE MOROCCO TIMES</h2>
+    <p>🇲🇦 SPECIAL UNITY DAY EDITION</p>
+    <p>History • Culture • Morocco • National Identity</p>
+    <p>END OF SPECIAL REPORT</p>
+</div>
+
+</div>
+
+</body>
+</html>
