@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouTube</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #181818;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    text-align: center;
+}
+
+h1 {
+    color: white;
+    font-size: 65px;
+    margin-bottom: 30px;
+}
+
+button {
+    background: #168cff;
+    color: white;
+    border: none;
+    padding: 20px 75px;
+    font-size: 30px;
+    font-weight: bold;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 6px 0 #0755a8;
+    transition: 0.2s;
+}
+
+button:hover {
+    background: #40a5ff;
+    transform: translateY(-3px);
+}
+
+button:active {
+    transform: translateY(4px);
+    box-shadow: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>▶ YouTube</h1>
+    <button onclick="openYouTube()">START</button>
+</div>
+
+<script>
+function openYouTube() {
+    window.location.href = "https://www.youtube.com/";
+}
+</script>
+
+</body>
+</html>

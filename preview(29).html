@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discord</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #23272a;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    text-align: center;
+}
+
+h1 {
+    color: white;
+    font-size: 65px;
+    margin-bottom: 30px;
+}
+
+button {
+    background: #5865F2;
+    color: white;
+    border: none;
+    padding: 20px 75px;
+    font-size: 30px;
+    font-weight: bold;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 6px 0 #3542b5;
+    transition: 0.2s;
+}
+
+button:hover {
+    background: #7289ff;
+    transform: translateY(-3px);
+}
+
+button:active {
+    transform: translateY(4px);
+    box-shadow: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>DISCORD</h1>
+    <button onclick="openDiscord()">START</button>
+</div>
+
+<script>
+function openDiscord() {
+    window.location.href = "https://discord.com/";
+}
+</script>
+
+</body>
+</html>
