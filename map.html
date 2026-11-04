@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Minefun.io</title>
+<title>OpenStreetMap</title>
 
 <style>
 * {
@@ -27,7 +27,7 @@ body {
 
 h1 {
     color: white;
-    font-size: 65px;
+    font-size: 55px;
     margin-bottom: 30px;
 }
 
@@ -59,13 +59,14 @@ button:active {
 <body>
 
 <div class="container">
-    <h1>MINEFUN.IO</h1>
-    <button onclick="openMinefun()">START</button>
+    <h1>🗺️ OPENSTREETMAP</h1>
+    <button onclick="openMap()">START</button>
 </div>
 
 <script>
-function openMinefun() {
-    window.location.href = "https://minefun.io/";
+function openMap() {
+    window.location.href =
+    "https://www.openstreetmap.org/export/embed.html?bbox=-7.65%2C33.52%2C-7.55%2C33.62&layer=mapnik";
 }
 </script>
 
