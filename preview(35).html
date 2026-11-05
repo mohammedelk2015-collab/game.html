@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FIRE_STORM Browser</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    background:#10131c;
+    color:white;
+    font-family:Arial,sans-serif;
+}
+
+header{
+    height:65px;
+    background:#191e2b;
+    display:flex;
+    align-items:center;
+    padding:0 18px;
+}
+
+.logo{
+    font-size:25px;
+    font-weight:bold;
+    color:#ff5722;
+}
+
+.logo span{color:white}
+
+.tabs{
+    display:flex;
+    gap:6px;
+    background:#111622;
+    padding:8px;
+    flex-wrap:wrap;
+}
+
+.tab{
+    background:#292f40;
+    padding:10px 16px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.tab:hover{background:#3a4359}
+.tab.active{background:#ff5722}
+
+.toolbar{
+    display:flex;
+    gap:8px;
+    padding:12px;
+    background:#191e2b;
+}
+
+button{
+    border:0;
+    border-radius:8px;
+    padding:11px 15px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+button:disabled{
+    opacity:.6;
+    cursor:not-allowed;
+}
+
+.toolbar button{
+    background:#30384b;
+    color:white;
+}
+
+#address{
+    flex:1;
+    min-width:100px;
+    border:0;
+    border-radius:20px;
+    padding:12px 18px;
+    background:#0e1420;
+    color:white;
+    font-size:15px;
+}
+
+#go{
+    background:#ff5722;
+    color:white;
+}
+
+main{
+    padding:25px;
+    max-width:1200px;
+    margin:auto;
+}
+
+h1{
+    font-size:35px;
+    color:#ff7043;
+}
+
+.subtitle{color:#aeb7ca}
+
+.search{
+    display:flex;
+    gap:8px;
+    margin:25px 0;
+}
+
+.search input{
+    flex:1;
+    min-width:100px;
+    padding:16px;
+    border-radius:12px;
+    border:1px solid #343c50;
+    background:#1a2030;
+    color:white;
+    font-size:16px;
+}
+
+.search button{
+    background:#ff5722;
+    color:white;
+}
+
+.sites{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(155px,1fr));
+    gap:14px;
+}
+
+.site{
+    background:#1b2232;
+    border:1px solid #30394d;
+    border-radius:14px;
+    padding:20px;
+    text-align:center;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.site:hover{
+    transform:translateY(-4px);
+    border-color:#ff5722;
+    background:#292235;
+}
+
+.emoji{font-size:38px}
+.site h3{margin:12px 0 5px}
+.site small{color:#9da9be}
+
+#viewer{
+    display:none;
+    width:100%;
+    height:calc(100vh - 140px);
+    border:0;
+    background:white;
+}
+
+.note{
+    margin-top:25px;
+    color:#8995aa;
+    font-size:13px;
+}
+
+@media(max-width:600px){
+    .toolbar{flex-wrap:wrap}
+    #address{order:1;flex-basis:100%}
+    #go{order:2}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">🔥 FIRE_STORM <span>Browser</span></div>
+    <div style="margin-left:auto;color:#9ba8bc">HTML EDITION</div>
+</header>
+
+<div class="tabs">
+    <div class="tab active" onclick="home()">🏠 Home</div>
+    <div class="tab" onclick="newTab()">＋ New tab</div>
+    <div class="tab" onclick="openAI()">🔥 Fire Helper</div>
+</div>
+
+<div class="toolbar">
+    <button onclick="back()">←</button>
+    <button onclick="forward()">→</button>
+    <button onclick="reload()">⟳</button>
+    <button onclick="home()">⌂</button>
+
+    <input
+        id="address"
+        placeholder="Search or enter a website address"
+        onkeydown="if(event.key==='Enter')navigate()">
+
+    <button id="go" onclick="navigate()">GO</button>
+</div>
+
+<main id="homepage">
+
+    <h1>🔥 Welcome to FIRE_STORM!</h1>
+
+    <div class="subtitle">
+        Your browser. Your websites. Your world.
+    </div>
+
+    <div class="search">
+        <input
+            id="search"
+            placeholder="What do you want to search?"
+            onkeydown="if(event.key==='Enter')searchWeb()">
+
+        <button onclick="searchWeb()">SEARCH</button>
+    </div>
+
+    <h2>⭐ Your websites</h2>
+
+    <div class="sites">
+
+        <div class="site" onclick="visit('https://mohammedelk2015-collab.github.io/game.html/')">
+            <div class="emoji">🎲</div>
+            <h3>My Games</h3>
+            <small>Game website</small>
+        </div>
+
+        <div class="site" onclick="visit('https://mohammedelk2015-collab.github.io/game.html/M.html')">
+            <div class="emoji">⛏️</div>
+            <h3>M Game</h3>
+            <small>My game</small>
+        </div>
+
+        <div class="site" onclick="visit('https://sandbox.minefun.io/docs?search=chat')">
+            <div class="emoji">📖</div>
+            <h3>Minefun Docs</h3>
+            <small>Developer documentation</small>
+        </div>
+
+        <div class="site" onclick="visit('https://minefun.io/')">
+            <div class="emoji">🧱</div>
+            <h3>Minefun.io</h3>
+            <small>Block games</small>
+        </div>
+
+    </div>
+
+    <div class="note">
+        FIRE_STORM HTML Browser • Some websites may block iframe embedding.
+    </div>
+
+</main>
+
+<iframe
+    id="viewer"
+    title="Website viewer"
+    allow="fullscreen; autoplay; clipboard-read; clipboard-write"
+    referrerpolicy="strict-origin-when-cross-origin">
+</iframe>
+
+<script>
+
+/* BROWSER */
+
+const address = document.getElementById('address');
+const viewer = document.getElementById('viewer');
+const homepage = document.getElementById('homepage');
+
+let historyList = [];
+let historyIndex = -1;
+
+/* FIRE HELPER OPENS THE BACKEND */
+
+function openAI(){
+    window.location.href = "http://localhost:3001/";
+}
+
+function visit(url){
+    load(url,true);
+}
+
+function getSearchURL(value){
+
+    let text = value.trim().toLowerCase();
+
+    if(/chatgpt/.test(text)){
+        return 'https://mohammedelk2015-collab.github.io/game.html/chatgpt.html';
+    }
+
+    if(/crazy\s*games?/.test(text)){
+        return 'https://www.crazygames.com/';
+    }
+
+    if(/\bmaps?\b/.test(text)){
+        return 'https://mohammedelk2015-collab.github.io/game.html/map.html';
+    }
+
+    if(/^https?:\/\//i.test(value)){
+        return value;
+    }
+
+    if(value.includes('.') && !value.includes(' ')){
+        return 'https://' + value;
+    }
+
+    return 'https://www.google.com/search?q=' + encodeURIComponent(value);
+}
+
+function navigate(){
+
+    let value = address.value.trim();
+
+    if(!value)return;
+
+    visit(getSearchURL(value));
+}
+
+function load(url,addHistory){
+
+    homepage.style.display = 'none';
+    viewer.style.display = 'block';
+
+    viewer.src = url;
+    address.value = url;
+
+    if(addHistory){
+
+        historyList = historyList.slice(0,historyIndex+1);
+
+        historyList.push(url);
+
+        historyIndex = historyList.length-1;
+    }
+}
+
+function searchWeb(){
+
+    let q = document.getElementById('search').value.trim();
+
+    if(!q)return;
+
+    visit(getSearchURL(q));
+}
+
+function home(){
+
+    viewer.style.display = 'none';
+    viewer.src = 'about:blank';
+
+    homepage.style.display = 'block';
+    address.value = '';
+}
+
+function back(){
+
+    if(historyIndex > 0){
+
+        historyIndex--;
+
+        load(historyList[historyIndex],false);
+    }
+}
+
+function forward(){
+
+    if(historyIndex < historyList.length-1){
+
+        historyIndex++;
+
+        load(historyList[historyIndex],false);
+    }
+}
+
+function reload(){
+
+    if(viewer.style.display === 'block'){
+        viewer.src = viewer.src;
+    }
+}
+
+function newTab(){
+    home();
+}
+
+</script>
+
+</body>
+</html>
